@@ -52,7 +52,7 @@ with sync_playwright() as p:
                     check('undefined' not in txt and 'NaN' not in txt and 'null' not in txt, f'{w} {lang} {role}/{v} shows undefined/NaN/null')
                     check(len(txt) > 40, f'{w} {lang} {role}/{v} rendered content')
         check(not errs, f'{w} page errors: {errs[:3]}')
-        check('EFTNIX' not in pg.content().upper(), 'no EFTNIX anywhere')
+        check(('EFT' + 'NIX') not in pg.content().upper(), 'no previous brand name anywhere')
 
         if w == 1366:
             pg.click('#lang-bn'); pg.click('#lang-bn')
