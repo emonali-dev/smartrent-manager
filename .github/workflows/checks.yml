@@ -1,0 +1,40 @@
+name: Checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Schema tests
+        env:
+          PGPASSWORD: postgres
+        run: db/run-tests.sh -h localhost -p 5432 -U postgres
+  prototype:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Playwright
+        run: |
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+      - name: Prototype tests
+        run: python3 prototype/test_prototype.py
+      - name: No previous brand name
+        run: |
+          if grep -ri "eftnix" --exclude-dir=.git --exclude=checks.yml .; then echo "previous brand name found"; exit 1; fi
