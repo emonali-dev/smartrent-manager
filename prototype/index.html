@@ -1,0 +1,802 @@
+<title>SmartRent BD</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* SmartRent BD design prototype. Layout: left sidebar of sections + work area; on phones the sidebar becomes a scrolling tab strip under the top bar.
+   Design system (spec 21): primary royal blue, white surfaces, light-gray ground; Hind Siliguri (Bangla) + Inter (English/numbers); light and dark mode. */
+:root{
+  --bg:#f2f4f8; --surface:#ffffff; --surface2:#f6f8fc; --ink:#0f1b33; --muted:#56637d; --line:#dde3ee;
+  --brand:#1d4ed8; --brand-deep:#1638a8; --brand-ink:#ffffff; --brand-soft:#e7eefd; --accent:#b7791f; --accent-soft:#fbf1dd;
+  --ok:#157347; --ok-soft:#e0f3e8; --warn:#9a6100; --warn-soft:#fcf0d8; --bad:#b4372a; --bad-soft:#f9e3df;
+  --chart1:#1d4ed8; --chart2:#9db6f3; --chart3:#e0a33a; --shadow:0 1px 2px rgba(15,27,51,.05),0 8px 24px rgba(15,27,51,.06);
+  --f-body:"Hind Siliguri","Inter",system-ui,sans-serif; --f-num:"Inter","Hind Siliguri",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a1020; --surface:#10182c; --surface2:#151f38; --ink:#e7ecf7; --muted:#9ba8c3; --line:#24304b;
+  --brand:#6b93ff; --brand-deep:#2747b8; --brand-ink:#08102a; --brand-soft:#18264d; --accent:#e7b459; --accent-soft:#382a12;
+  --ok:#5fcf94; --ok-soft:#133525; --warn:#f0b54d; --warn-soft:#382911; --bad:#f08a76; --bad-soft:#3f1f1a;
+  --chart1:#6b93ff; --chart2:#34508f; --chart3:#e7b459; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1020; --surface:#10182c; --surface2:#151f38; --ink:#e7ecf7; --muted:#9ba8c3; --line:#24304b;
+  --brand:#6b93ff; --brand-deep:#2747b8; --brand-ink:#08102a; --brand-soft:#18264d; --accent:#e7b459; --accent-soft:#382a12;
+  --ok:#5fcf94; --ok-soft:#133525; --warn:#f0b54d; --warn-soft:#382911; --bad:#f08a76; --bad-soft:#3f1f1a;
+  --chart1:#6b93ff; --chart2:#34508f; --chart3:#e7b459; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.25}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+a{color:var(--brand)}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;min-width:0}
+.logo-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,#2c5ff0,#1638a8);display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.logo-mark svg{width:23px;height:23px}
+.logo b{display:block;font-family:var(--f-num);font-size:16px;font-weight:700;letter-spacing:-.01em}
+.logo b span{color:var(--brand)}
+.logo small{display:block;color:var(--muted);font-size:11.5px;line-height:1.2;font-family:var(--f-num)}
+.top-tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;padding:5px 12px;border-radius:999px;cursor:pointer;font-size:13px;color:var(--muted);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
+.ctx{display:flex;gap:8px;align-items:center;font-size:13px;flex-wrap:wrap}
+.ctx select{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);max-width:220px;width:auto}
+.demo-tag{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:3px 9px;font-family:var(--f-num)}
+
+.shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:calc(100% - 62px)}
+.rail{border-right:1px solid var(--line);background:var(--surface);padding:14px 10px;position:sticky;top:62px;align-self:start;height:calc(100vh - 62px);overflow:auto}
+.rail h4{margin:14px 10px 6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-family:var(--f-num)}
+.rail a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;color:var(--ink);text-decoration:none;font-weight:500}
+.rail a svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;opacity:.75}
+.rail a:hover{background:var(--surface2)}
+.rail a[aria-current="page"]{background:var(--brand-soft);color:var(--brand);font-weight:700}
+.rail a .badge{margin-left:auto}
+main{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 60px;min-width:0}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:18px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.head h1{font-weight:700;font-size:clamp(1.4rem,2.6vw,1.85rem);letter-spacing:-.01em}
+.head p{margin:4px 0 0;color:var(--muted)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);min-width:0}
+.card h2{font-size:1.05rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kpi{padding:16px 18px}
+.kpi small{color:var(--muted);font-size:13px;display:block}
+.kpi strong{display:block;font-size:1.5rem;font-weight:700;margin-top:4px;font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi.accent{background:linear-gradient(150deg,#2457e6,#1638a8);color:#f3f6ff;border-color:transparent}
+.kpi.accent small,.kpi.accent span{color:#c9d6fb}
+.mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.mini div{background:var(--surface);padding:12px 14px}
+.mini small{display:block;color:var(--muted);font-size:12.5px}
+.mini b{font-family:var(--f-num);font-size:1.15rem;font-variant-numeric:tabular-nums}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:600;font-size:14px;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad-soft)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;font-weight:600;background:var(--surface2);padding:10px 12px;font-family:var(--f-num)}
+td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:middle}
+td.r,th.r{text-align:right}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-ok{color:var(--ok);background:var(--ok-soft)}.p-warn{color:var(--warn);background:var(--warn-soft)}.p-bad{color:var(--bad);background:var(--bad-soft)}.p-mute{color:var(--muted);background:var(--surface2)}.p-brand{color:var(--brand);background:var(--brand-soft)}
+.badge{font-size:11px;font-weight:700;background:var(--bad);color:#fff;border-radius:999px;padding:1px 7px;font-family:var(--f-num)}
+.muted{color:var(--muted)}.small{font-size:13px}
+.banner{border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;font-size:14px;flex-wrap:wrap}
+.banner.warn{background:var(--warn-soft)}.banner.bad{background:var(--bad-soft)}.banner.info{background:var(--brand-soft)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:10px;font-size:13px;color:var(--muted)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tools input,.tools select{width:auto;max-width:230px}
+
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.form .full{grid-column:1/-1}
+label.f{display:grid;gap:5px;font-size:13px;font-weight:600;color:var(--muted)}
+label.chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--ink);font-weight:500}
+label.chk input{width:auto}
+input,select,textarea{width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);min-width:0;font-size:15px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--brand);outline-offset:0;border-color:transparent}
+textarea{min-height:84px;resize:vertical}
+td input,td select{padding:6px 8px;font-size:14px;width:110px}
+
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font:12px var(--f-num)}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap;font-weight:400}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.meter{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden;border:1px solid var(--line)}
+.meter i{display:block;height:100%;background:var(--brand);border-radius:99px}
+.flow{display:flex;gap:4px;flex-wrap:wrap;font-size:12px}
+.flow span{padding:2px 8px;border-radius:999px;background:var(--surface2);color:var(--muted)}
+.flow span.on{background:var(--brand);color:var(--brand-ink)}
+.flow span.done{background:var(--brand-soft);color:var(--brand)}
+
+.scrim{position:fixed;inset:0;background:rgba(6,12,28,.55);z-index:50;display:grid;place-items:center;padding:16px}
+.modal{background:var(--surface);border-radius:18px;width:min(640px,100%);max-height:calc(100vh - 32px);overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.35);border:1px solid var(--line)}
+.modal header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+.modal header h3{font-size:1.1rem}
+.modal .body{padding:18px;display:grid;gap:14px}
+.modal footer{padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.x{border:0;background:var(--surface2);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:18px}
+
+.receipt{background:#ffffff;color:#16213a;border-radius:12px;padding:20px;border:1px solid #d9e0ee;font-size:14px}
+.receipt .rh{display:flex;justify-content:space-between;gap:10px;border-bottom:2px solid #1d4ed8;padding-bottom:10px;margin-bottom:10px}
+.receipt .rh b{font-size:15px}
+.receipt .brandline{font-family:var(--f-num);font-weight:700;color:#1d4ed8}
+.receipt .rl{display:flex;justify-content:space-between;padding:4px 0;gap:10px}
+.receipt .rt{display:flex;justify-content:space-between;font-weight:700;font-size:16px;border-top:1px solid #d9e0ee;margin-top:8px;padding-top:8px}
+.receipt .stamp{display:inline-block;margin-top:10px;border:2px solid #157347;color:#157347;border-radius:8px;padding:2px 10px;font-weight:700;transform:rotate(-4deg);font-family:var(--f-num);letter-spacing:.1em}
+.receipt .foot{margin-top:12px;font-size:11.5px;color:#5c6884}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.plans{display:grid;gap:12px;grid-template-columns:repeat(5,minmax(0,1fr))}
+.plan{display:grid;gap:8px;padding:18px;border-radius:16px;border:1px solid var(--line);background:var(--surface);align-content:start}
+.plan.current{border:2px solid var(--brand)}
+.plan .price{font-size:1.45rem;font-weight:700;font-family:var(--f-num)}
+.plan ul{margin:0;padding-left:18px;color:var(--muted);font-size:13.5px}
+.matrix td,.matrix th{text-align:center}.matrix td:first-child,.matrix th:first-child{text-align:left}
+.yes{color:var(--ok);font-weight:700}.no{color:var(--muted)}
+.list-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:center;flex-wrap:wrap}
+.list-row:last-child{border-bottom:0}
+
+@media (max-width:1100px){.plans{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:980px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:1fr 1fr}.mini{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--toph,110px));z-index:15;height:auto;display:flex;gap:4px;overflow-x:auto;padding:8px max(12px,env(safe-area-inset-left,0px));border-right:0;border-bottom:1px solid var(--line);scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .rail h4{display:none}
+  .rail a{white-space:nowrap;padding:7px 12px;font-size:14px}
+  .rail a svg{display:none}
+}
+@media (max-width:620px){
+  .g2,.g3{grid-template-columns:1fr}.form{grid-template-columns:1fr}.plans{grid-template-columns:1fr}
+  .logo small{display:none}
+  .ctx select{max-width:150px}
+  .ctx>.muted{display:none}
+  .kpi strong{font-size:1.28rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top" id="top">
+  <div class="logo">
+    <div class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 14.5h5M12 12v5"/></svg></div>
+    <div><b>SmartRent <span>BD</span></b><small id="parent">by SIDDIQIYA Technology</small></div>
+  </div>
+  <div class="top-tools">
+    <span class="demo-tag" id="demoTag">PROTOTYPE</span>
+    <div class="ctx" id="ctx"></div>
+    <div class="seg" role="group" aria-label="Language"><button id="lang-bn" type="button">বাংলা</button><button id="lang-en" type="button">EN</button></div>
+  </div>
+</header>
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Sections"></nav>
+  <main><div class="wrap" id="view"></div></main>
+</div>
+<div id="layer"></div>
+
+<script>
+(function(){
+"use strict";
+/* ================================================================ i18n */
+const T={
+ tagline:["আপনার প্রপার্টি, আরও স্মার্ট ব্যবস্থাপনা।","Your Property, Smarter Management."],
+ viewAs:["দেখুন:","View as:"], rSuper:["Super Admin","Super Admin"], rLandlord:["বাড়িওয়ালা","Landlord"], rManager:["প্রপার্টি ম্যানেজার","Property manager"], rTenant:["ভাড়াটিয়া","Tenant"],
+ org:["প্রতিষ্ঠান","Organization"], tenant:["ভাড়াটিয়া","Tenant"], manager:["ম্যানেজার","Manager"],
+ nOverview:["ওভারভিউ","Overview"], nOrgs:["বাড়িওয়ালা প্রতিষ্ঠান","Landlord organizations"], nPlans:["প্ল্যান ও দাম","Plans & pricing"], nSubs:["সাবস্ক্রিপশন পেমেন্ট","Subscription payments"], nAudit:["অডিট লগ","Audit log"], nSettings:["সিস্টেম সেটিংস","System settings"],
+ nDash:["ড্যাশবোর্ড","Dashboard"], nAnalytics:["রিপোর্ট ও অ্যানালিটিক্স","Reports & analytics"], nProps:["প্রপার্টি ও ফ্ল্যাট","Properties & units"], nTenants:["ভাড়াটিয়া","Tenants"],
+ nBilling:["ভাড়া ও বিল","Rent & bills"], nExpenses:["খরচ","Expenses"], nTickets:["মেরামত ও অভিযোগ","Maintenance"], nNotices:["নোটিশ","Notices"], nDaily:["দৈনিক আদায়","Daily collection"],
+ nSub:["সাবস্ক্রিপশন","Subscription"], nTeam:["টিম ও নিরাপত্তা","Team & security"],
+ nMyBills:["বিল ও রসিদ","Bills & receipts"], nMyTickets:["মেরামতের অনুরোধ","Maintenance requests"],
+ gPlatform:["প্ল্যাটফর্ম","Platform"], gManage:["পরিচালনা","Manage"], gMoney:["টাকা","Money"], gAccount:["অ্যাকাউন্ট","Account"], gTenant:["আমার বাসা","My home"],
+ save:["সেভ করুন","Save"], cancel:["বাতিল","Cancel"], close:["বন্ধ করুন","Close"], edit:["এডিট","Edit"], del:["মুছুন","Delete"], confirmDel:["হ্যাঁ, মুছুন","Yes, delete"], saved:["সেভ হয়েছে","Saved"],
+ search:["খুঁজুন…","Search…"], all:["সব","All"], status:["অবস্থা","Status"], date:["তারিখ","Date"], amount:["পরিমাণ","Amount"], month:["মাস","Month"], total:["মোট","Total"], none:["এখনো কিছু নেই","Nothing here yet"], note:["নোট","Note"],
+ name:["নাম","Name"], phone:["মোবাইল","Mobile"], email:["ইমেইল","Email"], address:["ঠিকানা","Address"], property:["প্রপার্টি","Property"], unit:["ফ্ল্যাট","Unit"], floor:["তলা","Floor"],
+ beds:["বেড","Beds"], baths:["বাথ","Baths"], sqft:["বর্গফুট","Sq ft"], deposit:["জামানত","Security deposit"],
+ rent:["ভাড়া","Rent"], service:["সার্ভিস চার্জ","Service charge"], gas:["গ্যাস","Gas"], water:["পানি","Water"], elec:["বিদ্যুৎ","Electricity"], internet:["ইন্টারনেট","Internet"], garbage:["ময়লা","Garbage"], late:["বিলম্ব ফি","Late fee"],
+ elecRate:["বিদ্যুৎ রেট (৳/ইউনিট)","Electricity rate (৳/kWh)"], meterStart:["শুরুর মিটার রিডিং","Opening meter reading"], prevRead:["আগের রিডিং","Previous"], curRead:["বর্তমান রিডিং","Current"], used:["ব্যবহার","Used"],
+ paid:["পরিশোধিত","Paid"], due:["বকেয়া","Outstanding"], partial:["আংশিক","Part paid"], unpaid:["অপরিশোধিত","Unpaid"], overdue:["মেয়াদোত্তীর্ণ","Overdue"], vacant:["খালি","Vacant"], occupied:["ভাড়া দেওয়া","Occupied"], dueDate:["শেষ তারিখ","Due date"],
+ // dashboard
+ expected:["প্রত্যাশিত ভাড়া","Expected rent"], collected:["আদায়","Collected"], outstanding:["বকেয়া","Outstanding"], expenses:["খরচ","Expenses"], netIncome:["নিট আয়","Net income"],
+ properties:["প্রপার্টি","Properties"], unitsT:["ফ্ল্যাট","Units"], tenantsT:["ভাড়াটিয়া","Tenants"], thisMonth:["এই মাস","This month"], rate:["আদায়ের হার","collection rate"],
+ topDue:["সবচেয়ে বেশি বকেয়া","Largest balances"], expiring:["চুক্তি শেষ হচ্ছে (৬০ দিন)","Leases ending within 60 days"], openTickets:["চলমান মেরামত","Open maintenance"], daysLeft:["দিন বাকি","days left"],
+ remind:["WhatsApp-এ মনে করান","Remind on WhatsApp"],
+ // analytics
+ trend:["আয় বনাম খরচ (৬ মাস)","Income vs expenses (6 months)"], billedVsColl:["বিল বনাম আদায় (৬ মাস)","Billed vs collected (6 months)"], billed:["বিল","Billed"], byProp:["প্রপার্টি অনুযায়ী","By property"],
+ aging:["বকেয়ার বয়স","Outstanding by age"], a0:["এই মাস","This month"], a1:["১ মাস","1 month"], a2:["২+ মাস","2+ months"], incomeMix:["আয়ের ভাগ (এই মাস)","Income mix (this month)"], noi:["নিট অপারেটিং আয়","Net operating income"],
+ exportNote:["প্রোডাকশন সংস্করণে PDF, Excel ও প্রিন্ট এক্সপোর্ট থাকবে (সার্ভারে তৈরি, বাংলা ফন্টসহ)।","The production version exports PDF, Excel and print (generated on the server, with Bangla fonts)."],
+ // billing
+ genBills:["এই মাসের বিল তৈরি করুন","Generate this month's invoices"], billsMade:["টি বিল তৈরি হয়েছে","invoices generated"], alreadyBilled:["এই মাসের সব বিল আগেই তৈরি হয়েছে","All invoices for this month already exist"],
+ readingsHint:["বিল তৈরির আগে প্রতিটি ফ্ল্যাটের বিদ্যুৎ মিটার রিডিং দিন। রিডিং না দিলে বিদ্যুৎ বিল ০ ধরা হবে। একই মাসে একই ভাড়াটিয়ার দ্বিতীয় বিল তৈরি হয় না।","Enter each unit's meter reading first. Units without a reading are billed 0 for electricity. A tenant never gets two invoices for the same month."],
+ badReading:["বর্তমান রিডিং আগের রিডিংয়ের চেয়ে কম হতে পারে না","Current reading can't be lower than the previous one"],
+ collect:["টাকা নিন","Collect"], receipt:["রসিদ","Receipt"], invoice:["ইনভয়েস","Invoice"], recordPay:["পেমেন্ট রেকর্ড করুন","Record payment"], method:["মাধ্যম","Method"], cash:["নগদ","Cash"], bkash:["bKash","bKash"], nagad:["Nagad","Nagad"], bank:["ব্যাংক ট্রান্সফার","Bank transfer"], txn:["ট্রানজ্যাকশন আইডি","Transaction ID"],
+ txnNeeded:["bKash/Nagad/ব্যাংক পেমেন্টে ট্রানজ্যাকশন আইডি দিন।","Enter the transaction ID for bKash, Nagad or bank payments."], txnDup:["এই ট্রানজ্যাকশন আইডি আগেই ব্যবহার হয়েছে।","This transaction ID has already been recorded."],
+ payTooMuch:["বকেয়ার চেয়ে বেশি টাকা নেওয়া যাবে না।","Amount can't be more than the balance due."], payZero:["০-এর বেশি টাকা লিখুন।","Enter an amount above 0."],
+ payDone:["পেমেন্ট রেকর্ড হয়েছে, রসিদ তৈরি","Payment recorded and receipt ready"], copy:["লেখা কপি করুন","Copy text"], copied:["কপি হয়েছে","Copied"], sendWa:["WhatsApp-এ পাঠান","Send on WhatsApp"],
+ billNo:["ইনভয়েস নং","Invoice no."], receiptNo:["রসিদ নং","Receipt no."], thanks:["ধন্যবাদ।","Thank you."], lateApplied:["বিলম্ব ফি যোগ হয়েছে","Late fee added"], addLate:["বিলম্ব ফি যোগ","Add late fee"],
+ immut:["পেমেন্ট রেকর্ড বদলানো বা মোছা যায় না; ভুল হলে সংশোধনী এন্ট্রি দিতে হয়।","Payment records can't be edited or deleted; mistakes are fixed with a correcting entry."],
+ // tenants
+ addTenant:["নতুন ভাড়াটিয়া","New tenant"], nid:["NID নম্বর","National ID"], advance:["অগ্রিম","Advance"], leaseStart:["চুক্তি শুরু","Lease start"], leaseEnd:["চুক্তি শেষ","Lease end"], members:["পরিবারের সদস্য","Household size"], emergency:["জরুরি যোগাযোগ","Emergency contact"],
+ moveOut:["ভাড়া ছেড়ে দিয়েছে (মুভ-আউট)","Moved out"], active:["সক্রিয়","Active"], left:["চলে গেছে","Moved out"], showNid:["দেখান","Show"], hideNid:["লুকান","Hide"], unitTaken:["এই ফ্ল্যাটে আগে থেকে ভাড়াটিয়া আছে।","This unit already has a tenant."],
+ selectUnit:["ফ্ল্যাট বেছে নিন","Choose a unit"], needName:["নাম ও মোবাইল নম্বর দিন।","Enter a name and mobile number."], badPhone:["মোবাইল নম্বর ০১ দিয়ে শুরু ১১ অঙ্কের হতে হবে।","Mobile number must be 11 digits starting with 01."], badDates:["চুক্তি শেষের তারিখ শুরুর পরে হতে হবে।","Lease end must be after the start."],
+ // properties
+ addProp:["নতুন প্রপার্টি","New property"], addUnit:["নতুন ফ্ল্যাট","New unit"],
+ limitHit:["আপনার প্ল্যানের সীমা পূর্ণ। আরও যোগ করতে প্ল্যান আপগ্রেড করুন।","Your plan's limit is reached. Upgrade to add more."],
+ // expenses
+ addExpense:["নতুন খরচ","New expense"], category:["ধরন","Category"], exMaint:["রক্ষণাবেক্ষণ","Maintenance"], exElec:["বিদ্যুৎ","Electricity"], exWater:["পানি","Water"], exSalary:["স্টাফ বেতন","Staff salary"], exSecurity:["নিরাপত্তা","Security"], exClean:["পরিচ্ছন্নতা","Cleaning"], exRepair:["মেরামত","Repairs"], exOther:["অন্যান্য","Other"],
+ // tickets
+ newTicket:["নতুন অনুরোধ","New request"], title:["বিষয়","Subject"], details:["বিস্তারিত","Details"], priority:["অগ্রাধিকার","Priority"], pLow:["কম","Low"], pMed:["মাঝারি","Medium"], pHigh:["জরুরি","Urgent"], assignee:["দায়িত্বপ্রাপ্ত","Assigned to"],
+ cElec:["বিদ্যুৎ","Electrical"], cPlumb:["প্লাম্বিং","Plumbing"], cWater:["পানি","Water"], cSec:["নিরাপত্তা","Security"], cClean:["পরিচ্ছন্নতা","Cleaning"], cGen:["সাধারণ মেরামত","General"],
+ sSubmitted:["জমা","Submitted"], sReviewed:["দেখা হয়েছে","Reviewed"], sAssigned:["দায়িত্ব দেওয়া","Assigned"], sProgress:["কাজ চলছে","In progress"], sCompleted:["সম্পন্ন","Completed"], sClosed:["বন্ধ","Closed"],
+ next:["পরের ধাপ","Next step"], ticketSent:["অনুরোধ জমা হয়েছে","Request submitted"], comment:["মন্তব্য","Comment"], addComment:["মন্তব্য যোগ","Add comment"], resolution:["সমাধানের নোট","Resolution note"],
+ // notices
+ newNotice:["নতুন নোটিশ","New notice"], allProps:["সব প্রপার্টি","All properties"], noticeBody:["নোটিশের লেখা","Notice text"], published:["প্রকাশিত হয়েছে","Published"],
+ // subscription
+ curPlan:["বর্তমান প্ল্যান","Current plan"], renews:["নবায়ন","Renews"], usage:["ব্যবহার","Usage"], switchPlan:["এই প্ল্যান নিন","Switch to this plan"], perMonth:["/মাস","/month"], custom:["আলোচনা সাপেক্ষে","Custom"], unlimited:["সীমাহীন","Unlimited"],
+ planChanged:["প্ল্যান বদলানো হয়েছে","Plan changed"], payNote:["পেইড প্ল্যান সক্রিয় হয় শুধু সার্ভারে যাচাই করা পেমেন্টের পর। স্ক্রিনশট দিয়ে সক্রিয় হয় না।","Paid plans activate only after a server-verified payment, never from a screenshot."],
+ lProps:["প্রপার্টি","properties"], lUnits:["ফ্ল্যাট","units"], lTen:["ভাড়াটিয়া","tenants"], lStaff:["স্টাফ","staff"],
+ sActive:["সক্রিয়","Active"], sTrial:["ট্রায়াল","Trial"], sGrace:["গ্রেস পিরিয়ড","Grace period"], sExpired:["মেয়াদ শেষ","Expired"], sSusp:["স্থগিত","Suspended"],
+ expiredMsg:["সাবস্ক্রিপশনের মেয়াদ শেষ। আপনার সব ডেটা নিরাপদ আছে; শুধু দেখা যাবে, নতুন কিছু যোগ বা বদল করা যাবে না। যাচাইকৃত পেমেন্টের পর সব ফিচার আবার চালু হবে।","Your subscription has expired. All your data is kept safe and readable, but nothing can be added or changed until a verified payment restores the plan."],
+ graceMsg:["পেমেন্ট বাকি: গ্রেস পিরিয়ড চলছে। এই সময়ে সব কাজ করা যাবে।","Payment due: you are in the grace period and everything still works."],
+ history:["পেমেন্ট ইতিহাস","Payment history"], fPaid:["পরিশোধিত","Paid"], fFailed:["ব্যর্থ","Failed"], fRefund:["রিফান্ড","Refunded"],
+ // super
+ mrr:["মাসিক আয় (MRR)","Monthly recurring revenue"], totalUsers:["মোট ব্যবহারকারী","Total users"], landlords:["বাড়িওয়ালা","Landlords"], activeSubs:["সক্রিয় সাবস্ক্রিপশন","Active subscriptions"], expiredSubs:["মেয়াদ শেষ","Expired"], failedPays:["ব্যর্থ পেমেন্ট","Failed payments"],
+ openAs:["বাড়িওয়ালা হিসেবে খুলুন","Open as landlord"], suspend:["স্থগিত","Suspend"], activate:["সক্রিয় করুন","Activate"], plan:["প্ল্যান","Plan"], since:["যোগদান","Joined"], growth:["নতুন প্রতিষ্ঠান (মাস অনুযায়ী)","New organizations by month"],
+ byPlan:["প্ল্যান অনুযায়ী আয়","Revenue by plan"], isolation:["প্রতিটি প্রতিষ্ঠানের ডেটা আলাদা: এক বাড়িওয়ালা অন্য কারও তথ্য দেখতে পারেন না।","Each organization's data is isolated: no landlord can see another's records."],
+ price:["দাম (৳/মাস)","Price (৳/month)"], editPlans:["প্ল্যানের দাম ও সীমা","Plan prices and limits"], trialDays:["ট্রায়াল (দিন)","Trial (days)"], graceDays:["গ্রেস পিরিয়ড (দিন)","Grace period (days)"],
+ verifyPay:["যাচাইকৃত পেমেন্ট রেকর্ড","Record verified payment"], refund:["রিফান্ড রেকর্ড","Record refund"], gatewayNote:["লাইভ সংস্করণে bKash/Nagad গেটওয়ে সার্ভার থেকে পেমেন্ট যাচাই করবে; এখানে শুধু ম্যানুয়ালি যাচাই করা পেমেন্ট রেকর্ড হয়।","In the live version the bKash/Nagad gateway verifies payments on the server; here only manually verified payments are recorded."],
+ // team
+ users:["টিম সদস্য","Team members"], role:["ভূমিকা","Role"], lastActive:["শেষ সক্রিয়","Last active"], twofa:["২-ধাপ লগইন","Two-step login"], on:["চালু","On"], off:["বন্ধ","Off"], assigned:["দায়িত্বে থাকা প্রপার্টি","Assigned properties"],
+ perms:["ম্যানেজারের অনুমতি","Manager permissions"], permHint:["প্রতিটি ম্যানেজার কী করতে পারবেন তা বাড়িওয়ালা ঠিক করেন।","The landlord decides what each manager may do."],
+ pCollect:["টাকা নেওয়া","Collect payments"], pBills:["বিল তৈরি","Generate invoices"], pTenants:["ভাড়াটিয়া যোগ/বদল","Add/edit tenants"], pExpenses:["খরচ লেখা","Record expenses"], pNid:["NID দেখা","View national ID"],
+ noPerm:["আপনার এই কাজের অনুমতি নেই। বাড়িওয়ালার সাথে যোগাযোগ করুন।","You don't have permission for this. Ask the landlord."],
+ secNotes:["নিরাপত্তা ব্যবস্থা","Safeguards"],
+ sec1:["প্রতিটি অনুরোধে সার্ভার প্রতিষ্ঠান ও ভূমিকা যাচাই করে, তাই এক প্রতিষ্ঠানের ডেটা অন্যজন পায় না।","The server checks organization and role on every request, so no organization can read another's data."],
+ sec2:["NID-এর মতো সংবেদনশীল তথ্য ঢাকা থাকে; অনুমতি থাকলেই দেখা যায় এবং প্রতিবার দেখা লগে ওঠে।","Sensitive fields like national ID stay masked; only permitted users can reveal them, and every reveal is logged."],
+ sec3:["প্রতিটি টাকার লেনদেন, বিল ও পরিবর্তন অডিট লগে থাকে; লগ বদলানো যায় না।","Every payment, invoice and change goes to an audit log that can't be altered."],
+ sec4:["২-ধাপ লগইন, ডিভাইস/সেশন বন্ধ করার সুবিধা, আর এনক্রিপ্টেড ব্যাকআপ।","Two-step login, device and session sign-out, and encrypted backups."],
+ who:["কে","Who"], action:["কাজ","Action"],
+ // tenant portal
+ hello:["আসসালামু আলাইকুম","Assalamu alaikum"], yourDue:["আপনার মোট বকেয়া","Your balance"], nextDue:["পরের শেষ তারিখ","Next due date"], monthlyRent:["মাসিক ভাড়া","Monthly rent"],
+ payOnline:["অনলাইনে পেমেন্ট","Pay online"], payOnlineSoon:["bKash/Nagad গেটওয়ে যুক্ত হলে চালু হবে। এখন ম্যানেজারকে টাকা দিয়ে রসিদ নিন।","Available once the bKash/Nagad gateway is connected. For now, pay your manager and get a receipt."],
+ contact:["যোগাযোগ","Contacts"], landlordContact:["বাড়িওয়ালা/ম্যানেজার","Landlord / manager"], agreement:["ভাড়া চুক্তি","Rental agreement"], agreementNote:["ডিজিটাল চুক্তি (বাংলা ও ইংরেজি টেমপ্লেট, PDF) আইনি পর্যালোচনার পর যুক্ত হবে।","Digital agreements (Bangla and English templates, PDF) are added after legal review."],
+ latestNotices:["নোটিশ বোর্ড","Notice board"], yourUnit:["আপনার ফ্ল্যাট","Your unit"], allPaid:["সব পরিশোধিত","All paid up"],
+ resetDemo:["উদাহরণ ডেটা রিসেট","Reset sample data"], resetDone:["উদাহরণ ডেটা নতুন করে সাজানো হয়েছে","Sample data reset"],
+ demoNote:["এটি SmartRent BD-এর ডিজাইন প্রোটোটাইপ। সব নাম ও টাকার অঙ্ক কাল্পনিক উদাহরণ এবং শুধু আপনার ব্রাউজারে থাকে।","This is the SmartRent BD design prototype. All names and amounts are fictional examples kept only in your browser."],
+ prev:["আগের","Previous"], nextPg:["পরের","Next"], page:["পৃষ্ঠা","Page"],
+};
+let LANG="bn";
+const t=k=>(T[k]?T[k][LANG==="bn"?0:1]:k);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const loc=()=>LANG==="bn"?"bn-BD":"en-IN";
+const tk=n=>(n<0?"−":"")+"৳"+Math.abs(Math.round(n)).toLocaleString(loc());
+const nf=n=>Number(n).toLocaleString(loc());
+const MB=["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+const ME=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const mName=(m,short)=>{const[y,mm]=m.split("-").map(Number);return (LANG==="bn"?MB[mm-1]:ME[mm-1])+(short?"":" "+(LANG==="bn"?y.toLocaleString("bn-BD",{useGrouping:false}):y));};
+const dFmt=d=>{if(!d)return"";const x=new Date(d.slice(0,10)+"T00:00:00");return x.toLocaleDateString(loc(),{day:"numeric",month:"short",year:"numeric"});};
+
+/* ================================================================ dates */
+const TODAY="2026-11-10", CUR="2026-11", DUE_DAY=10, LATE_FEE=500;
+const addMonths=(m,n)=>{let[y,mm]=m.split("-").map(Number);mm+=n;while(mm>12){mm-=12;y++}while(mm<1){mm+=12;y--}return y+"-"+String(mm).padStart(2,"0");};
+const daysBetween=(a,b)=>Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5);
+const monthIdx=m=>Number(m.slice(0,4))*12+Number(m.slice(5));
+const last6=()=>{const a=[];for(let k=5;k>=0;k--)a.push(addMonths(CUR,-k));return a;};
+
+/* ================================================================ seed (fictional examples) */
+let _id=1000; const nid=p=>p+(++_id);
+function seed(){
+  _id=1000; let r=11; const rnd=()=>{r=(r*16807)%2147483647;return r/2147483647;};
+  const S={plans:[],settings:{trialDays:14,graceDays:7},orgs:[],props:[],units:[],tenants:[],bills:[],payments:[],expenses:[],tickets:[],notices:[],users:[],subPays:[],audit:[],seq:{}};
+  S.plans=[
+   {id:"free",name:"Free",price:0,lim:{props:1,units:5,tenants:5,staff:0},feats:["fRent","fReceipt","fTenantPortal"]},
+   {id:"starter",name:"Starter",price:199,lim:{props:2,units:20,tenants:20,staff:1},feats:["fRent","fReceipt","fTenantPortal","fUtility","fNotice"]},
+   {id:"business",name:"Business",price:499,lim:{props:5,units:60,tenants:60,staff:3},feats:["fRent","fReceipt","fTenantPortal","fUtility","fNotice","fMaint","fExpense","fReports"]},
+   {id:"professional",name:"Professional",price:999,lim:{props:15,units:200,tenants:200,staff:10},feats:["fRent","fReceipt","fTenantPortal","fUtility","fNotice","fMaint","fExpense","fReports","fManagers","fWhatsApp"]},
+   {id:"enterprise",name:"Enterprise",price:null,lim:{props:Infinity,units:Infinity,tenants:Infinity,staff:Infinity},feats:["fAll","fApi","fPriority","fBrand"]},
+  ];
+  S.orgs.push({id:"o1",name:"জসিম প্রপার্টিজ",nameEn:"Jasim Properties",owner:"আলহাজ্ব মোঃ জসিম উদ্দিন",phone:"01700-000101",plan:"professional",status:"active",renew:"2026-12-01",since:"2026-03-14",city:"ঢাকা"});
+  S.orgs.push({id:"o2",name:"গ্রিনভিউ হোমস",nameEn:"Greenview Homes",owner:"মোঃ হারুনুর রশিদ",phone:"01800-000201",plan:"business",status:"grace",renew:"2026-11-06",since:"2026-06-02",city:"চট্টগ্রাম"});
+  S.orgs.push({id:"o3",name:"রওশন ভিলা",nameEn:"Rowshan Villa",owner:"মিসেস রওশন আরা",phone:"01900-000301",plan:"starter",status:"active",renew:"2026-11-28",since:"2026-08-20",city:"সিলেট"});
+  S.orgs.push({id:"o4",name:"নাজমা নিবাস",nameEn:"Nazma Nibash",owner:"নাজমা খাতুন",phone:"01600-000401",plan:"free",status:"active",renew:"",since:"2026-10-03",city:"রাজশাহী"});
+  S.orgs.push({id:"o5",name:"সিটি নেস্ট",nameEn:"City Nest",owner:"কামাল হোসেন",phone:"01500-000501",plan:"business",status:"trial",renew:"2026-11-17",since:"2026-11-03",city:"খুলনা"});
+  S.orgs.push({id:"o6",name:"আল-আমিন রেসিডেন্সি",nameEn:"Al-Amin Residency",owner:"আল-আমিন গ্রুপ",phone:"01300-000601",plan:"starter",status:"expired",renew:"2026-10-20",since:"2026-05-11",city:"বরিশাল"});
+  const fn=["রফিকুল ইসলাম","নাসরিন আক্তার","তানভীর হাসান","সাবরিনা রহমান","মাহমুদুল হক","ফারহানা ইয়াসমিন","আরিফ চৌধুরী","শারমিন সুলতানা","কামরুল হাসান","নুসরাত জাহান","জাহিদ হোসেন","রুমানা পারভীন","ইমরান খান","মৌসুমী আক্তার","সাকিব আল মামুন","তাহমিনা বেগম","রাশেদুল করিম","লায়লা আরজুমান্দ","মিজানুর রহমান","সুমাইয়া ইসলাম"];
+  let fi=0;
+  const mk=(oid,props)=>props.forEach(p=>{
+    S.props.push({id:p.id,orgId:oid,name:p.name,address:p.address});
+    for(let f=1;f<=p.floors;f++) for(const s of p.sides){
+      const big=s==="A"; const rent=p.rent+(f-1)*500+(big?0:-1500);
+      S.units.push({id:nid("u"),orgId:oid,propId:p.id,label:f+s,floor:f,beds:big?3:2,baths:big?2:1,sqft:big?1250:950,rent,deposit:rent*2,service:p.service,gas:p.gas,water:p.water,internet:0,garbage:100,elecRate:p.elec,meter0:1000+Math.round(rnd()*4000)});
+    }
+  });
+  mk("o1",[{id:"p1",name:"জসিম ভিলা",address:"বাড়ি ১২, রোড ৫, মিরপুর ১০, ঢাকা",floors:5,sides:["A","B"],rent:16000,service:1500,gas:1080,water:500,elec:9.5},
+           {id:"p2",name:"নূর মঞ্জিল",address:"৪৫/২ শান্তিনগর, ঢাকা",floors:4,sides:["A"],rent:22000,service:2000,gas:1080,water:600,elec:9.5},
+           {id:"p3",name:"জসিম টাওয়ার",address:"প্লট ৮, সেক্টর ৭, উত্তরা, ঢাকা",floors:6,sides:["A","B"],rent:25000,service:3000,gas:1080,water:700,elec:10}]);
+  mk("o2",[{id:"p4",name:"গ্রিনভিউ ১",address:"নাসিরাবাদ, চট্টগ্রাম",floors:4,sides:["A","B"],rent:14000,service:1200,gas:1080,water:400,elec:9.5}]);
+  mk("o3",[{id:"p5",name:"রওশন ভিলা",address:"জিন্দাবাজার, সিলেট",floors:3,sides:["A","B"],rent:12000,service:800,gas:1080,water:300,elec:9.5}]);
+  mk("o4",[{id:"p6",name:"নাজমা নিবাস",address:"উপশহর, রাজশাহী",floors:2,sides:["A"],rent:9000,service:500,gas:1080,water:300,elec:9}]);
+  mk("o5",[{id:"p7",name:"সিটি নেস্ট",address:"সোনাডাঙ্গা, খুলনা",floors:3,sides:["A","B"],rent:11000,service:800,gas:1080,water:300,elec:9}]);
+  mk("o6",[{id:"p8",name:"আল-আমিন রেসিডেন্সি",address:"সদর রোড, বরিশাল",floors:3,sides:["A"],rent:10000,service:700,gas:1080,water:300,elec:9}]);
+  S.units.forEach((u,i)=>{
+    if(rnd()<(u.orgId==="o1"?0.12:0.25)) return;
+    const months=2+Math.floor(rnd()*22), start=addMonths(CUR,-months)+"-01", end=addMonths(start.slice(0,7),12+Math.floor(rnd()*12))+"-01";
+    const name=fn[(u.orgId==="o1"?fi++:fi++*7)%fn.length];
+    S.tenants.push({id:nid("t"),orgId:u.orgId,unitId:u.id,name,phone:"01"+(5+(i%5))+String(10000000+i*7919).slice(0,8),email:"",nid:String(1990000000000+Math.floor(rnd()*9e9)).slice(0,10),emergency:"",advance:u.rent*2,start,end,members:2+Math.floor(rnd()*4),active:true});
+  });
+  const o1t=S.tenants.filter(x=>x.orgId==="o1"); if(o1t[2])o1t[2].end="2026-12-01"; if(o1t[5])o1t[5].end="2026-12-31";
+  const lastRead={}; S.units.forEach(u=>lastRead[u.id]=u.meter0);
+  let billNo=5000,rcpNo=8000;
+  for(let k=5;k>=0;k--){
+    const m=addMonths(CUR,-k);
+    S.tenants.forEach(tn=>{
+      if(tn.start.slice(0,7)>m) return;
+      const u=S.units.find(x=>x.id===tn.unitId);
+      const use=Math.round(90+rnd()*180+(["2026-06","2026-07","2026-08"].includes(m)?80:0));
+      const prev=lastRead[u.id],cur=prev+use; lastRead[u.id]=cur;
+      const b=mkBill(S,tn,u,m,prev,cur,++billNo);
+      const p=rnd(); let pay=0;
+      if(k>=2) pay=p<0.93?b.total:(p<0.97?Math.round(b.total*0.5/100)*100:0);
+      else if(k===1) pay=p<0.82?b.total:(p<0.92?Math.round(b.total*0.6/100)*100:0);
+      else pay=p<0.45?b.total:(p<0.6?Math.round(b.total*0.5/100)*100:0);
+      if(pay>0){const day=String(2+Math.floor(rnd()*(k===0?8:12))).padStart(2,"0");const meth=["cash","bkash","nagad","bank"][Math.floor(rnd()*4)];
+        S.payments.push({id:nid("p"),orgId:tn.orgId,billId:b.id,tenantId:tn.id,amount:pay,date:m+"-"+day,method:meth,txn:meth==="cash"?"":"TX"+Math.floor(1e9+rnd()*8e9),no:"R-"+(++rcpNo),by:"seed"});}
+    });
+    // expenses per property
+    S.props.forEach(pr=>{const n=S.units.filter(u=>u.propId===pr.id).length;
+      [["salary",n*700],["elec",n*180],["water",n*90],["clean",n*120],["security",n*300]].forEach(([c,a])=>S.expenses.push({id:nid("e"),orgId:pr.orgId,propId:pr.id,cat:c,amount:Math.round(a*(0.9+rnd()*0.2)/10)*10,date:m+"-05",note:""}));
+      if(rnd()<0.5)S.expenses.push({id:nid("e"),orgId:pr.orgId,propId:pr.id,cat:"repair",amount:Math.round((2000+rnd()*12000)/100)*100,date:m+"-18",note:LANG==="bn"?"":""});});
+  }
+  S.units.forEach(u=>u.lastRead=lastRead[u.id]);
+  S.seq={bill:billNo,rcp:rcpNo,sub:9000};
+  // team
+  S.users.push({id:"m1",orgId:"o1",name:"মিনহাজ উদ্দিন",role:"manager",props:["p1","p2"],twofa:true,last:"2026-11-10",perms:{collect:true,bills:true,tenants:true,expenses:false,nid:false}});
+  S.users.push({id:"m2",orgId:"o1",name:"রিনা দাস",role:"manager",props:["p3"],twofa:false,last:"2026-11-04",perms:{collect:true,bills:false,tenants:false,expenses:false,nid:false}});
+  S.users.push({id:"m3",orgId:"o2",name:"সুমন বড়ুয়া",role:"manager",props:["p4"],twofa:true,last:"2026-11-09",perms:{collect:true,bills:true,tenants:true,expenses:true,nid:false}});
+  // maintenance
+  const tix=[["রান্নাঘরের কল দিয়ে পানি পড়ছে","plumb","submitted","med","2026-11-09"],["সিঁড়ির লাইট নষ্ট","elec","assigned","low","2026-11-07"],["পানির পাম্প বন্ধ","water","progress","high","2026-11-08"],["ছাদের ট্যাংক পরিষ্কার দরকার","clean","completed","low","2026-10-28"],["গেটের তালা ভাঙা","sec","closed","high","2026-10-19"]];
+  tix.forEach((x,i)=>{const tn=o1t[i*3%o1t.length];S.tickets.push({id:nid("k"),orgId:"o1",tenantId:tn.id,unitId:tn.unitId,title:x[0],cat:x[1],status:x[2],pri:x[3],date:x[4],desc:"",assignee:["assigned","progress","completed","closed"].includes(x[2])?"m1":"",comments:[]});});
+  S.notices.push({id:nid("n"),orgId:"o1",propId:null,title:"নভেম্বরের ভাড়া ১০ তারিখের মধ্যে",body:"সম্মানিত ভাড়াটিয়াবৃন্দ, নভেম্বর মাসের ভাড়া ও সার্ভিস চার্জ ১০ তারিখের মধ্যে পরিশোধ করার অনুরোধ রইল। ১০ তারিখের পরে বিলম্ব ফি প্রযোজ্য।",date:"2026-11-01"});
+  S.notices.push({id:nid("n"),orgId:"o1",propId:"p3",title:"লিফট রক্ষণাবেক্ষণ: শুক্রবার সকাল ১০টা–১২টা",body:"জসিম টাওয়ারের লিফট শুক্রবার সকাল ১০টা থেকে ১২টা পর্যন্ত বন্ধ থাকবে।",date:"2026-11-06"});
+  // subscription payment history
+  S.orgs.forEach(o=>{const p=S.plans.find(x=>x.id===o.plan);if(!p.price)return;const n=Math.min(6,Math.max(0,monthIdx(CUR)-monthIdx(o.since.slice(0,7))));
+    for(let k=n;k>=1;k--){const m=addMonths(CUR,-k);S.subPays.push({id:nid("s"),orgId:o.id,month:m,amount:p.price,status:"paid",ref:"BK"+Math.floor(1e8+rnd()*8e8),date:m+"-01"});}
+    if(o.status==="grace")S.subPays.push({id:nid("s"),orgId:o.id,month:CUR,amount:p.price,status:"failed",ref:"BK-FAILED",date:CUR+"-06"});
+    if(o.status==="expired")S.subPays.push({id:nid("s"),orgId:o.id,month:"2026-10",amount:p.price,status:"failed",ref:"NG-FAILED",date:"2026-10-20"});});
+  S.audit.push({at:"2026-11-10 09:12",orgId:"o1",who:"মিনহাজ উদ্দিন",what:"পেমেন্ট রেকর্ড · জসিম ভিলা 3A"},{at:"2026-11-06 18:40",orgId:"o1",who:"আলহাজ্ব মোঃ জসিম উদ্দিন",what:"নোটিশ প্রকাশ · লিফট রক্ষণাবেক্ষণ"},{at:"2026-11-03 11:20",orgId:null,who:"Super Admin",what:"City Nest · ট্রায়াল শুরু"});
+  return S;
+}
+function mkBill(S,tn,u,m,prev,cur,no){
+  const items=[["rent",u.rent],["service",u.service],["gas",u.gas],["water",u.water],["garbage",u.garbage],["elec",Math.round(Math.max(0,cur-prev)*u.elecRate)]];
+  if(u.internet)items.push(["internet",u.internet]);
+  const total=items.reduce((a,x)=>a+x[1],0);
+  const b={id:nid("bl"),no:"INV-"+no,orgId:tn.orgId,tenantId:tn.id,unitId:u.id,month:m,prev,cur,items,total,issued:m+"-01",due:m+"-"+String(DUE_DAY).padStart(2,"0")};
+  S.bills.push(b); return b;
+}
+
+/* ================================================================ state */
+const KEY="smartrent-bd-prototype-v1";
+let S=null; const UI={role:"landlord",orgId:"o1",userId:"m1",tenantId:null,view:"dash",month:CUR,reveal:{},q:"",fil:"",page:0,readings:{}};
+function load(){
+  try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);if(d&&d.S&&d.S.orgs){S=d.S;_id=d.id||9000;Object.assign(UI,d.UI||{});if(d.lang)LANG=d.lang;S.plans.forEach(p=>{for(const k in p.lim)if(p.lim[k]===null)p.lim[k]=Infinity;});return;}}}catch(e){}
+  S=seed();
+}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({S,id:_id,lang:LANG,UI:{role:UI.role,orgId:UI.orgId,userId:UI.userId,tenantId:UI.tenantId}}));}catch(e){}}
+
+/* ================================================================ scoping: organization isolation + manager property scope */
+const O=()=>S.orgs.find(o=>o.id===UI.orgId);
+const ME_MGR=()=>S.users.find(u=>u.id===UI.userId);
+const unitById=id=>S.units.find(u=>u.id===id);
+const propById=id=>S.props.find(p=>p.id===id);
+const tenById=id=>S.tenants.find(x=>x.id===id);
+const userById=id=>S.users.find(u=>u.id===id);
+function allowedProps(){const ps=S.props.filter(p=>p.orgId===UI.orgId).map(p=>p.id);if(UI.role==="manager"){const m=ME_MGR();return ps.filter(p=>m&&m.props.includes(p));}return ps;}
+function propOf(rec){if(rec.propId!==undefined)return rec.propId;if(rec.unitId){const u=unitById(rec.unitId);return u&&u.propId;}if(rec.billId){const b=S.bills.find(x=>x.id===rec.billId);return b&&unitById(b.unitId).propId;}return null;}
+function mine(k){const ap=allowedProps();return S[k].filter(x=>x.orgId===UI.orgId&&(k==="notices"&&x.propId===null||k==="users"||ap.includes(k==="props"?x.id:propOf(x))));}
+const paidFor=b=>S.payments.filter(p=>p.billId===b.id).reduce((a,p)=>a+p.amount,0);
+const dueFor=b=>b.total-paidFor(b);
+const unitName=u=>{const p=propById(u.propId);return (p?p.name:"")+" · "+u.label;};
+const tenantDue=tn=>S.bills.filter(b=>b.tenantId===tn.id).reduce((a,b)=>a+dueFor(b),0);
+const activeTenantOf=u=>S.tenants.find(x=>x.unitId===u.id&&x.active);
+const planOf=o=>S.plans.find(p=>p.id===o.plan)||S.plans[0];
+const oname=o=>LANG==="bn"?o.name:(o.nameEn||o.name);
+function can(p){if(UI.role==="landlord")return true;if(UI.role==="manager"){const m=ME_MGR();return !!(m&&m.perms[p]);}return false;}
+const locked=()=>{const o=O();return (UI.role==="landlord"||UI.role==="manager")&&o&&(o.status==="expired"||o.status==="suspended");};
+const dis=p=>(locked()||(p&&!can(p)))?" disabled":"";
+function audit(what){const who=UI.role==="super"?"Super Admin":UI.role==="manager"?(ME_MGR()||{}).name:UI.role==="tenant"?(tenById(UI.tenantId)||{}).name:O().owner;S.audit.unshift({at:TODAY+" "+new Date().toTimeString().slice(0,5),orgId:UI.role==="super"?null:UI.orgId,who,what});}
+function overLimit(kind){const o=O(),l=planOf(o).lim;const n={props:S.props.filter(p=>p.orgId===o.id).length,units:S.units.filter(u=>u.orgId===o.id).length,tenants:S.tenants.filter(x=>x.orgId===o.id&&x.active).length,staff:S.users.filter(u=>u.orgId===o.id).length}[kind];return n>=l[kind];}
+
+/* ================================================================ icons */
+const I={home:'<path d="M3 10.5 12 4l9 6.5"/><path d="M5.5 9v10.5h13V9"/>',chart:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',bldg:'<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/>',users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.8-3.5 3.2-5.2 6-5.2s5.2 1.7 6 5.2"/><path d="M16 5.5a3 3 0 0 1 0 5.6M18 14.6c1.6.7 2.6 2.4 3 5.4"/>',bill:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',tool:'<path d="M14.5 6.5a4 4 0 0 0 5 5L12 19l-3 1 1-3 7.5-7.5"/><path d="m4 4 6 6"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',wallet:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12.5h2"/><path d="M3 9h18"/>',card:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/>',shield:'<path d="M12 3 4.5 6v6c0 4.5 3.2 7.8 7.5 9 4.3-1.2 7.5-4.5 7.5-9V6z"/><path d="m9 12 2 2 4-4"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8" r="1.2"/>',cog:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',cal:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>'};
+const ic=k=>'<svg viewBox="0 0 24 24" aria-hidden="true">'+I[k]+'</svg>';
+
+/* ================================================================ navigation */
+function navItems(){
+  if(UI.role==="super") return [["gPlatform",[["overview","nOverview","chart"],["orgs","nOrgs","bldg"],["plans","nPlans","tag"],["subs","nSubs","card"],["audit","nAudit","list"],["settings","nSettings","cog"]]]];
+  if(UI.role==="tenant") return [["gTenant",[["tdash","nDash","home"],["tbills","nMyBills","bill"],["ttickets","nMyTickets","tool"],["tnotices","nNotices","bell"]]]];
+  const open=mine("tickets").filter(k=>!["completed","closed"].includes(k.status)).length;
+  if(UI.role==="manager") return [["gManage",[["dash","nDash","home"],["billing","nBilling","bill"],["daily","nDaily","cal"],["tenants","nTenants","users"],["tickets","nTickets","tool",open],["notices","nNotices","bell"]]]];
+  return [["gManage",[["dash","nDash","home"],["props","nProps","bldg"],["tenants","nTenants","users"],["tickets","nTickets","tool",open],["notices","nNotices","bell"]]],["gMoney",[["billing","nBilling","bill"],["daily","nDaily","cal"],["expenses","nExpenses","wallet"],["analytics","nAnalytics","chart"]]],["gAccount",[["sub","nSub","card"],["team","nTeam","shield"]]]];
+}
+function renderNav(){document.getElementById("rail").innerHTML=navItems().map(([g,items])=>'<h4>'+t(g)+'</h4>'+items.map(([v,k,i,badge])=>'<a href="#'+v+'"'+(UI.view===v?' aria-current="page"':'')+'>'+ic(i)+'<span>'+t(k)+'</span>'+(badge?'<span class="badge">'+nf(badge)+'</span>':'')+'</a>').join("")).join("");}
+function renderCtx(){
+  const roles=[["super","rSuper"],["landlord","rLandlord"],["manager","rManager"],["tenant","rTenant"]];
+  let h='<span class="muted">'+t("viewAs")+'</span><select id="roleSel" aria-label="'+t("viewAs")+'">'+roles.map(([v,k])=>'<option value="'+v+'"'+(UI.role===v?" selected":"")+'>'+t(k)+'</option>').join("")+'</select>';
+  if(UI.role==="landlord") h+='<select id="orgSel" aria-label="'+t("org")+'">'+S.orgs.map(o=>'<option value="'+o.id+'"'+(o.id===UI.orgId?" selected":"")+'>'+esc(oname(o))+'</option>').join("")+'</select>';
+  if(UI.role==="manager"){const ms=S.users.filter(u=>u.role==="manager");if(!ms.find(m=>m.id===UI.userId))UI.userId=ms[0].id;UI.orgId=ME_MGR().orgId;
+    h+='<select id="mgrSel" aria-label="'+t("manager")+'">'+ms.map(m=>'<option value="'+m.id+'"'+(m.id===UI.userId?" selected":"")+'>'+esc(m.name)+' · '+esc(oname(S.orgs.find(o=>o.id===m.orgId)))+'</option>').join("")+'</select>';}
+  if(UI.role==="tenant"){const ts=S.tenants.filter(x=>x.orgId===UI.orgId&&x.active);if(!ts.find(x=>x.id===UI.tenantId))UI.tenantId=ts[0]&&ts[0].id;
+    h+='<select id="tenSel" aria-label="'+t("tenant")+'">'+ts.map(x=>'<option value="'+x.id+'"'+(x.id===UI.tenantId?" selected":"")+'>'+esc(x.name)+' · '+esc(unitName(unitById(x.unitId)))+'</option>').join("")+'</select>';}
+  document.getElementById("ctx").innerHTML=h;
+  document.getElementById("lang-bn").setAttribute("aria-pressed",LANG==="bn");
+  document.getElementById("lang-en").setAttribute("aria-pressed",LANG==="en");
+  document.documentElement.lang=LANG;
+}
+const defaultView=()=>UI.role==="super"?"overview":UI.role==="tenant"?"tdash":"dash";
+function route(){const h=(location.hash||"").slice(1);const ok=navItems().flatMap(g=>g[1].map(x=>x[0]));UI.view=ok.includes(h)?h:defaultView();render();}
+function render(){
+  renderCtx();renderNav();
+  document.getElementById("view").innerHTML=(VIEWS[UI.view]||VIEWS[defaultView()])();
+  document.documentElement.style.setProperty("--toph",document.getElementById("top").offsetHeight+"px");
+  persist();
+}
+
+/* ================================================================ builders */
+const head=(title,sub,actions)=>'<div class="head"><div><h1>'+title+'</h1>'+(sub?'<p>'+sub+'</p>':'')+'</div>'+(actions?'<div class="tools">'+actions+'</div>':'')+'</div>';
+const kpi=(label,val,sub,accent)=>'<div class="card kpi'+(accent?' accent':'')+'"><small>'+label+'</small><strong>'+val+'</strong>'+(sub?'<span>'+sub+'</span>':'')+'</div>';
+const PAGE=12;
+function table(cols,rows,empty,paged){
+  if(!rows.length) return '<div class="empty">'+(empty||t("none"))+'</div>';
+  let pr=rows,pager="";
+  if(paged&&rows.length>PAGE){const pages=Math.ceil(rows.length/PAGE);UI.page=Math.min(UI.page,pages-1);pr=rows.slice(UI.page*PAGE,UI.page*PAGE+PAGE);
+    pager='<div class="pager"><span>'+t("page")+' '+nf(UI.page+1)+' / '+nf(pages)+'</span><button class="btn sm" data-act="pg" data-id="-1"'+(UI.page===0?" disabled":"")+'>'+t("prev")+'</button><button class="btn sm" data-act="pg" data-id="1"'+(UI.page>=pages-1?" disabled":"")+'>'+t("nextPg")+'</button></div>';}
+  return '<div class="tablebox"><table><thead><tr>'+cols.map(c=>'<th'+(c.r?' class="r"':'')+'>'+c.h+'</th>').join("")+'</tr></thead><tbody>'+pr.join("")+'</tbody></table></div>'+pager;
+}
+function billPill(b){const d=dueFor(b);if(d<=0)return'<span class="pill p-ok">'+t("paid")+'</span>';if(TODAY>b.due)return'<span class="pill p-bad">'+(d<b.total?t("partial")+" · ":"")+t("overdue")+'</span>';if(d<b.total)return'<span class="pill p-warn">'+t("partial")+'</span>';return'<span class="pill p-mute">'+t("unpaid")+'</span>';}
+const subPill=s=>({active:'<span class="pill p-ok">'+t("sActive")+'</span>',trial:'<span class="pill p-brand">'+t("sTrial")+'</span>',grace:'<span class="pill p-warn">'+t("sGrace")+'</span>',expired:'<span class="pill p-bad">'+t("sExpired")+'</span>',suspended:'<span class="pill p-bad">'+t("sSusp")+'</span>'}[s]||"");
+const waNum=p=>{const d=String(p||"").replace(/\D/g,"");return d.startsWith("0")?"88"+d:d;};
+const waLink=(phone,text)=>"https://wa.me/"+waNum(phone)+"?text="+encodeURIComponent(text);
+const methodName=m=>t(m||"cash");
+function statusBanner(){const o=O();if(!o||UI.role==="super"||UI.role==="tenant")return"";if(o.status==="expired"||o.status==="suspended")return'<div class="banner bad">'+t("expiredMsg")+'</div>';if(o.status==="grace")return'<div class="banner warn">'+t("graceMsg")+(UI.role==="landlord"?' <a class="btn sm" href="#sub" style="margin-left:auto">'+t("nSub")+'</a>':'')+'</div>';return"";}
+const demoBanner=()=>'<div class="banner info small"><span style="flex:1;min-width:200px">'+t("demoNote")+'</span><button class="btn sm" data-act="reset">'+t("resetDemo")+'</button></div>';
+const monthSel=months=>'<select id="monthSel" aria-label="'+t("month")+'">'+months.map(x=>'<option value="'+x+'"'+(x===UI.month?" selected":"")+'>'+mName(x)+'</option>').join("")+'</select>';
+const searchBox=()=>'<input type="search" id="q" placeholder="'+t("search")+'" value="'+esc(UI.q)+'" aria-label="'+t("search")+'">';
+const qmatch=(...s)=>{const q=UI.q.trim().toLowerCase();return !q||s.some(x=>String(x||"").toLowerCase().includes(q));};
+
+function barChart(labels,series,colors){
+  const W=640,H=240,L=58,R=12,Tp=14,B=30;const max=Math.max(1,...series.flat());
+  const step=Math.pow(10,Math.floor(Math.log10(max)));const nice=[1,2,2.5,5,10].map(x=>x*step).find(x=>x*4>=max)||step*10;const top=nice*4;
+  const ih=H-Tp-B,iw=W-L-R,gw=iw/labels.length,bw=Math.min(26,(gw-14)/series.length);let g="";
+  for(let i=0;i<=4;i++){const v=nice*i,y=Tp+ih-ih*v/top;g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)"/><text x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end">'+(v>=1000?(v/1000).toLocaleString(loc())+"k":v.toLocaleString(loc()))+'</text>';}
+  labels.forEach((lb,i)=>{const x0=L+gw*i+(gw-bw*series.length-4*(series.length-1))/2;
+    series.forEach((s,j)=>{const h=ih*s[i]/top;g+='<rect x="'+(x0+j*(bw+4))+'" y="'+(Tp+ih-h)+'" width="'+bw+'" height="'+Math.max(0,h)+'" rx="3" fill="'+colors[j]+'"><title>'+esc(lb)+': '+tk(s[i])+'</title></rect>';});
+    g+='<text x="'+(L+gw*i+gw/2)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(lb)+'</text>';});
+  return '<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img">'+g+'</svg>';
+}
+
+/* ================================================================ metrics */
+function metrics(m){
+  const bills=mine("bills").filter(b=>b.month===m);
+  const expected=bills.reduce((a,b)=>a+b.total,0), collected=bills.reduce((a,b)=>a+paidFor(b),0);
+  const exp=mine("expenses").filter(e=>e.date.slice(0,7)===m).reduce((a,e)=>a+e.amount,0);
+  const units=mine("units"),occ=units.filter(u=>activeTenantOf(u)).length;
+  const outstanding=mine("bills").reduce((a,b)=>a+dueFor(b),0);
+  return {bills,expected,collected,exp,net:collected-exp,units:units.length,occ,outstanding,props:allowedProps().length,tenants:mine("tenants").filter(x=>x.active).length};
+}
+
+/* ================================================================ VIEWS */
+const VIEWS={};
+VIEWS.dash=function(){
+  const o=O(),m=metrics(CUR),rate=m.expected?Math.round(m.collected/m.expected*100):0;
+  const top=mine("tenants").filter(x=>x.active).map(x=>[x,tenantDue(x)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const exp=mine("tenants").filter(x=>x.active).map(x=>[x,daysBetween(TODAY,x.end)]).filter(x=>x[1]>=0&&x[1]<=60).sort((a,b)=>a[1]-b[1]);
+  const tix=mine("tickets").filter(k=>!["completed","closed"].includes(k.status));
+  const sub=UI.role==="manager"?esc(ME_MGR().name)+" · "+t("rManager"):mName(CUR)+" · "+subPill(o.status)+" · "+planOf(o).name;
+  return head(esc(oname(o)),sub,'<a class="btn primary" href="#billing">'+t("nBilling")+'</a>')+statusBanner()+demoBanner()+
+   '<div class="grid g4">'+kpi(t("expected"),tk(m.expected),mName(CUR),true)+kpi(t("collected"),tk(m.collected),nf(rate)+"% "+t("rate"))+kpi(t("outstanding"),tk(m.outstanding),nf(mine("tenants").filter(x=>tenantDue(x)>0).length)+" "+(LANG==="bn"?"জনের কাছে":"tenants"))+
+   (UI.role==="landlord"?kpi(t("netIncome"),tk(m.net),t("expenses")+" "+tk(m.exp)):kpi(t("openTickets"),nf(tix.length),""))+'</div>'+
+   '<div class="mini"><div><small>'+t("properties")+'</small><b>'+nf(m.props)+'</b></div><div><small>'+t("unitsT")+'</small><b>'+nf(m.units)+'</b></div><div><small>'+t("occupied")+' / '+t("vacant")+'</small><b>'+nf(m.occ)+' / '+nf(m.units-m.occ)+'</b></div><div><small>'+t("tenantsT")+'</small><b>'+nf(m.tenants)+'</b></div></div>'+
+   '<div class="grid g2"><div class="card"><h2>'+t("topDue")+'</h2>'+(top.length?'':'<div class="empty">'+t("none")+'</div>')+top.map(([x,d])=>'<div class="list-row"><span style="min-width:0">'+esc(x.name)+'<span class="small muted" style="display:block">'+esc(unitName(unitById(x.unitId)))+'</span></span><span class="row" style="flex-wrap:nowrap"><b class="num">'+tk(d)+'</b><a class="btn sm" target="_blank" rel="noopener" title="'+t("remind")+'" href="'+waLink(x.phone,(LANG==="bn"?"আসসালামু আলাইকুম "+x.name+", আপনার বকেয়া "+tk(d)+"। অনুগ্রহ করে পরিশোধ করুন। — "+o.name+" (SmartRent BD)":"Hello "+x.name+", your balance is "+tk(d)+". Please pay at your earliest. — "+oname(o)+" (SmartRent BD)"))+'">WhatsApp</a></span></div>').join("")+'</div>'+
+   '<div class="grid" style="align-content:start"><div class="card"><h2>'+t("expiring")+'</h2>'+(exp.length?exp.map(([x,d])=>'<div class="list-row"><span>'+esc(x.name)+' <span class="muted small">· '+esc(unitName(unitById(x.unitId)))+'</span></span><span class="pill '+(d<30?"p-warn":"p-mute")+'">'+nf(d)+" "+t("daysLeft")+'</span></div>').join(""):'<div class="empty">'+t("none")+'</div>')+'</div>'+
+   '<div class="card"><h2>'+t("openTickets")+' <a class="btn sm" href="#tickets">'+t("nTickets")+'</a></h2>'+(tix.length?tix.slice(0,4).map(k=>'<div class="list-row"><span>'+esc(k.title)+' <span class="muted small">· '+esc(unitName(unitById(k.unitId)))+'</span></span>'+tixPill(k.status)+'</div>').join(""):'<div class="empty">'+t("none")+'</div>')+'</div></div></div>';
+};
+
+VIEWS.analytics=function(){
+  const months=last6(),ms=months.map(metrics);
+  const props=mine("props").map(p=>{const us=S.units.filter(u=>u.propId===p.id);const occ=us.filter(u=>activeTenantOf(u)).length;const bl=S.bills.filter(b=>b.month===CUR&&us.some(u=>u.id===b.unitId));const inc=bl.reduce((a,b)=>a+paidFor(b),0);const ex=S.expenses.filter(e=>e.propId===p.id&&e.date.slice(0,7)===CUR).reduce((a,e)=>a+e.amount,0);const due=S.bills.filter(b=>us.some(u=>u.id===b.unitId)).reduce((a,b)=>a+dueFor(b),0);return{p,n:us.length,occ,inc,ex,due};});
+  const age=[0,0,0];mine("bills").forEach(b=>{const d=dueFor(b);if(d<=0)return;age[Math.min(2,monthIdx(CUR)-monthIdx(b.month))]+=d;});const ageT=age.reduce((a,b)=>a+b,0)||1;
+  const mix={};mine("bills").filter(b=>b.month===CUR).forEach(b=>b.items.forEach(([k,v])=>mix[k]=(mix[k]||0)+v));const mixT=Object.values(mix).reduce((a,b)=>a+b,0)||1;
+  return head(t("nAnalytics"),esc(oname(O())))+
+   '<div class="grid g2"><div class="card"><h2>'+t("trend")+'<span class="legend"><span><i style="background:var(--chart1)"></i>'+t("collected")+'</span><span><i style="background:var(--chart3)"></i>'+t("expenses")+'</span></span></h2>'+barChart(months.map(m=>mName(m,true)),[ms.map(x=>x.collected),ms.map(x=>x.exp)],["var(--chart1)","var(--chart3)"])+'</div>'+
+   '<div class="card"><h2>'+t("billedVsColl")+'<span class="legend"><span><i style="background:var(--chart2)"></i>'+t("billed")+'</span><span><i style="background:var(--chart1)"></i>'+t("collected")+'</span></span></h2>'+barChart(months.map(m=>mName(m,true)),[ms.map(x=>x.expected),ms.map(x=>x.collected)],["var(--chart2)","var(--chart1)"])+'</div></div>'+
+   '<div class="card"><h2>'+t("byProp")+' · '+mName(CUR)+'</h2>'+table([{h:t("property")},{h:t("occupied")},{h:t("collected"),r:1},{h:t("expenses"),r:1},{h:t("noi"),r:1},{h:t("due"),r:1}],props.map(x=>'<tr><td>'+esc(x.p.name)+'</td><td style="min-width:150px"><div class="row" style="flex-wrap:nowrap"><div class="meter" style="flex:1"><i style="width:'+Math.round(x.occ/x.n*100)+'%"></i></div><span class="num small">'+nf(x.occ)+'/'+nf(x.n)+'</span></div></td><td class="r num">'+tk(x.inc)+'</td><td class="r num">'+tk(x.ex)+'</td><td class="r num"><b>'+tk(x.inc-x.ex)+'</b></td><td class="r num">'+tk(x.due)+'</td></tr>'))+'</div>'+
+   '<div class="grid g2"><div class="card"><h2>'+t("aging")+'</h2>'+[["a0",age[0]],["a1",age[1]],["a2",age[2]]].map(([k,v],i)=>'<div style="display:grid;gap:4px;margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>'+t(k)+'</span><b class="num">'+tk(v)+'</b></div><div class="meter"><i style="width:'+Math.round(v/ageT*100)+'%;background:'+["var(--chart2)","var(--warn)","var(--bad)"][i]+'"></i></div></div>').join("")+'</div>'+
+   '<div class="card"><h2>'+t("incomeMix")+'</h2>'+["rent","service","elec","gas","water","garbage"].map(k=>'<div class="list-row"><span>'+t(k)+'</span><span class="num">'+tk(mix[k]||0)+' <span class="muted small">· '+nf(Math.round((mix[k]||0)/mixT*100))+'%</span></span></div>').join("")+'</div></div>'+
+   '<p class="small muted">'+t("exportNote")+'</p>';
+};
+
+VIEWS.billing=function(){
+  const m=UI.month,bills=mine("bills").filter(b=>b.month===m),mt=metrics(m);
+  const unbilled=mine("tenants").filter(x=>x.active&&!bills.some(b=>b.tenantId===x.id));
+  let gen="";
+  if(m===CUR&&unbilled.length&&can("bills")){
+    gen='<div class="card"><h2>'+t("genBills")+'</h2><p class="muted small" style="margin:0 0 12px">'+t("readingsHint")+'</p>'+
+     table([{h:t("tenant")},{h:t("unit")},{h:t("prevRead"),r:1},{h:t("curRead")},{h:t("used"),r:1}],unbilled.map(x=>{const u=unitById(x.unitId);const v=UI.readings[u.id]!=null?UI.readings[u.id]:"";return'<tr><td>'+esc(x.name)+'</td><td class="small">'+esc(unitName(u))+'</td><td class="r num">'+nf(u.lastRead)+'</td><td><input type="number" inputmode="numeric" min="'+u.lastRead+'" id="rd-'+u.id+'" data-read="'+u.id+'" value="'+v+'" placeholder="'+u.lastRead+'" aria-label="'+t("curRead")+' '+esc(unitName(u))+'"'+dis("bills")+'></td><td class="r num" id="use-'+u.id+'">'+(v===""?"—":nf(Math.max(0,v-u.lastRead)))+'</td></tr>';}))+
+     '<div class="row" style="margin-top:12px;justify-content:flex-end"><button class="btn primary" data-act="gen"'+dis("bills")+'>'+t("genBills")+' ('+nf(unbilled.length)+')</button></div></div>';
+  }
+  const fil=UI.fil;
+  const rows=bills.map(b=>[b,tenById(b.tenantId)]).filter(([b,x])=>qmatch(x.name,unitName(unitById(b.unitId)),b.no)&&(!fil||(fil==="paid"?dueFor(b)<=0:fil==="due"?dueFor(b)>0:true)))
+   .sort((a,b)=>dueFor(b[0])-dueFor(a[0]))
+   .map(([b,x])=>{const d=dueFor(b),hasLate=b.items.some(i=>i[0]==="late");return'<tr><td class="num small">'+b.no+'</td><td>'+esc(x.name)+'</td><td class="small muted">'+esc(unitName(unitById(b.unitId)))+'</td><td class="r num">'+tk(b.total)+'</td><td class="r num">'+tk(paidFor(b))+'</td><td class="r num"><b>'+tk(d)+'</b></td><td>'+billPill(b)+'</td><td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><button class="btn sm" data-act="bill" data-id="'+b.id+'">'+(d>0?t("invoice"):t("receipt"))+'</button>'+(d>0&&TODAY>b.due&&!hasLate&&can("bills")?'<button class="btn sm" data-act="late" data-id="'+b.id+'"'+dis("bills")+'>'+t("addLate")+'</button>':'')+(d>0?'<button class="btn sm primary" data-act="pay" data-id="'+b.id+'"'+dis("collect")+'>'+t("collect")+'</button>':'')+'</div></td></tr>';});
+  return head(t("nBilling"),mName(m)+" · "+t("dueDate")+": "+nf(DUE_DAY)+(LANG==="bn"?" তারিখ":""),monthSel(last6()))+statusBanner()+
+   '<div class="grid g3">'+kpi(t("billed"),tk(mt.expected))+kpi(t("collected"),tk(mt.collected))+kpi(t("due"),tk(mt.expected-mt.collected))+'</div>'+gen+
+   '<div class="card"><h2>'+mName(m)+'<div class="tools">'+searchBox()+'<select id="fil" aria-label="'+t("status")+'"><option value="">'+t("all")+'</option><option value="due"'+(fil==="due"?" selected":"")+'>'+t("due")+'</option><option value="paid"'+(fil==="paid"?" selected":"")+'>'+t("paid")+'</option></select></div></h2>'+
+   table([{h:t("billNo")},{h:t("tenant")},{h:t("unit")},{h:t("total"),r:1},{h:t("paid"),r:1},{h:t("due"),r:1},{h:t("status")},{h:"",r:1}],rows,null,true)+'<p class="small muted" style="margin:10px 0 0">'+t("immut")+'</p></div>';
+};
+
+VIEWS.daily=function(){
+  const pays=mine("payments").filter(p=>p.date.slice(0,7)===CUR);const byDay={};pays.forEach(p=>{(byDay[p.date]=byDay[p.date]||[]).push(p);});
+  const days=Object.keys(byDay).sort().reverse();
+  return head(t("nDaily"),mName(CUR))+'<div class="card">'+table([{h:t("date")},{h:LANG==="bn"?"পেমেন্ট":"Payments",r:1},{h:t("cash"),r:1},{h:"bKash / Nagad",r:1},{h:t("bank"),r:1},{h:t("total"),r:1}],days.map(d=>{const L=byDay[d],sum=f=>L.filter(f).reduce((a,p)=>a+p.amount,0);return'<tr><td>'+dFmt(d)+'</td><td class="r num">'+nf(L.length)+'</td><td class="r num">'+tk(sum(p=>p.method==="cash"))+'</td><td class="r num">'+tk(sum(p=>p.method==="bkash"||p.method==="nagad"))+'</td><td class="r num">'+tk(sum(p=>p.method==="bank"))+'</td><td class="r num"><b>'+tk(sum(()=>true))+'</b></td></tr>';}))+'</div>'+
+   '<div class="card"><h2>'+(LANG==="bn"?"আজকের রসিদ":"Today's receipts")+'</h2>'+table([{h:t("receiptNo")},{h:t("tenant")},{h:t("method")},{h:t("txn")},{h:t("amount"),r:1}],mine("payments").filter(p=>p.date===TODAY).map(p=>'<tr><td class="num small">'+p.no+'</td><td>'+esc(tenById(p.tenantId).name)+'</td><td>'+methodName(p.method)+'</td><td class="num small">'+esc(p.txn||"—")+'</td><td class="r num">'+tk(p.amount)+'</td></tr>'))+'</div>';
+};
+
+VIEWS.tenants=function(){
+  const rows=mine("tenants").filter(x=>qmatch(x.name,x.phone,unitName(unitById(x.unitId)))&&(UI.fil!=="left"?x.active:!x.active)).sort((a,b)=>a.name.localeCompare(b.name))
+   .map(x=>{const u=unitById(x.unitId),d=tenantDue(x),shown=UI.reveal[x.id];
+    return'<tr><td><b>'+esc(x.name)+'</b><div class="small muted num">'+esc(x.phone)+'</div></td><td class="small">'+esc(unitName(u))+'</td><td class="num small">'+(shown?esc(x.nid):"••••••"+esc(String(x.nid).slice(-4)))+(can("nid")?' <button class="btn sm" data-act="nid" data-id="'+x.id+'">'+t(shown?"hideNid":"showNid")+'</button>':'')+'</td><td class="small">'+dFmt(x.start)+' – '+dFmt(x.end)+'</td><td class="r num">'+tk(x.advance)+'</td><td class="r num">'+(d>0?'<b>'+tk(d)+'</b>':tk(0))+'</td><td>'+(x.active?'<span class="pill p-ok">'+t("active")+'</span>':'<span class="pill p-mute">'+t("left")+'</span>')+'</td><td class="r"><button class="btn sm" data-act="editTenant" data-id="'+x.id+'"'+dis("tenants")+'>'+t("edit")+'</button></td></tr>';});
+  return head(t("nTenants"),nf(mine("tenants").filter(x=>x.active).length)+" "+t("active"),searchBox()+'<select id="fil" aria-label="'+t("status")+'"><option value="">'+t("active")+'</option><option value="left"'+(UI.fil==="left"?" selected":"")+'>'+t("left")+'</option></select><button class="btn primary" data-act="newTenant"'+dis("tenants")+'>+ '+t("addTenant")+'</button>')+statusBanner()+
+   '<div class="card">'+table([{h:t("name")},{h:t("unit")},{h:"NID"},{h:t("leaseStart")+" – "+t("leaseEnd")},{h:t("advance"),r:1},{h:t("due"),r:1},{h:t("status")},{h:""}],rows,null,true)+'</div>';
+};
+
+VIEWS.props=function(){
+  const o=O(),l=planOf(o).lim;const nP=mine("props").length,nU=mine("units").length;
+  const lim=v=>v===Infinity?t("unlimited"):nf(v);
+  return head(t("nProps"),nf(nP)+"/"+lim(l.props)+" "+t("lProps")+" · "+nf(nU)+"/"+lim(l.units)+" "+t("lUnits"),'<button class="btn primary" data-act="newProp"'+dis()+'>+ '+t("addProp")+'</button>')+statusBanner()+
+   mine("props").map(p=>{const us=S.units.filter(u=>u.propId===p.id);
+    return'<div class="card"><h2><span>'+esc(p.name)+' <span class="muted small" style="font-weight:400">· '+esc(p.address)+'</span></span><button class="btn sm" data-act="newUnit" data-id="'+p.id+'"'+dis()+'>+ '+t("addUnit")+'</button></h2>'+
+    table([{h:t("unit")},{h:t("tenant")},{h:t("beds")+"/"+t("baths")},{h:t("sqft"),r:1},{h:t("rent"),r:1},{h:t("deposit"),r:1},{h:t("service"),r:1},{h:t("elecRate"),r:1},{h:""}],us.map(u=>{const x=activeTenantOf(u);return'<tr><td><b>'+esc(u.label)+'</b></td><td>'+(x?esc(x.name):'<span class="pill p-mute">'+t("vacant")+'</span>')+'</td><td class="num">'+nf(u.beds)+'/'+nf(u.baths)+'</td><td class="r num">'+nf(u.sqft)+'</td><td class="r num">'+tk(u.rent)+'</td><td class="r num">'+tk(u.deposit)+'</td><td class="r num">'+tk(u.service)+'</td><td class="r num">'+u.elecRate.toLocaleString(loc())+'</td><td class="r"><button class="btn sm" data-act="editUnit" data-id="'+u.id+'"'+dis()+'>'+t("edit")+'</button></td></tr>';}))+'</div>';}).join("");
+};
+
+const EXC=["maint","elec","water","salary","security","clean","repair","other"];
+const exName=c=>t("ex"+{maint:"Maint",elec:"Elec",water:"Water",salary:"Salary",security:"Security",clean:"Clean",repair:"Repair",other:"Other"}[c]);
+VIEWS.expenses=function(){
+  const m=UI.month,list=mine("expenses").filter(e=>e.date.slice(0,7)===m&&(!UI.fil||e.cat===UI.fil));
+  const byCat={};mine("expenses").filter(e=>e.date.slice(0,7)===m).forEach(e=>byCat[e.cat]=(byCat[e.cat]||0)+e.amount);const tot=Object.values(byCat).reduce((a,b)=>a+b,0);
+  return head(t("nExpenses"),mName(m)+" · "+t("total")+" "+tk(tot),monthSel(last6())+'<select id="fil" aria-label="'+t("category")+'"><option value="">'+t("all")+'</option>'+EXC.map(c=>'<option value="'+c+'"'+(UI.fil===c?" selected":"")+'>'+exName(c)+'</option>').join("")+'</select><button class="btn primary" data-act="newExpense"'+dis("expenses")+'>+ '+t("addExpense")+'</button>')+statusBanner()+
+   '<div class="grid g4">'+EXC.filter(c=>byCat[c]).slice(0,4).map(c=>kpi(exName(c),tk(byCat[c]),nf(Math.round(byCat[c]/(tot||1)*100))+"%")).join("")+'</div>'+
+   '<div class="card">'+table([{h:t("date")},{h:t("category")},{h:t("property")},{h:t("note")},{h:t("amount"),r:1}],list.sort((a,b)=>b.date.localeCompare(a.date)).map(e=>'<tr><td class="small">'+dFmt(e.date)+'</td><td>'+exName(e.cat)+'</td><td class="small">'+esc(propById(e.propId).name)+'</td><td class="small muted">'+esc(e.note)+'</td><td class="r num">'+tk(e.amount)+'</td></tr>'),null,true)+'</div>';
+};
+
+const FLOW=["submitted","reviewed","assigned","progress","completed","closed"];
+const stName=s=>t("s"+s[0].toUpperCase()+s.slice(1));
+const tixPill=s=>'<span class="pill '+(s==="submitted"?"p-bad":s==="closed"||s==="completed"?"p-ok":s==="progress"?"p-warn":"p-brand")+'">'+stName(s)+'</span>';
+const catName=c=>t({elec:"cElec",plumb:"cPlumb",water:"cWater",sec:"cSec",clean:"cClean"}[c]||"cGen");
+const priPill=p=>'<span class="pill '+(p==="high"?"p-bad":p==="med"?"p-warn":"p-mute")+'">'+t(p==="high"?"pHigh":p==="med"?"pMed":"pLow")+'</span>';
+const flow=s=>'<div class="flow">'+FLOW.map((x,i)=>'<span class="'+(x===s?"on":FLOW.indexOf(s)>i?"done":"")+'">'+stName(x)+'</span>').join("")+'</div>';
+VIEWS.tickets=function(){
+  const rows=mine("tickets").filter(k=>!UI.fil||(UI.fil==="open"?!["completed","closed"].includes(k.status):["completed","closed"].includes(k.status))).sort((a,b)=>FLOW.indexOf(a.status)-FLOW.indexOf(b.status)||b.date.localeCompare(a.date)).map(k=>{const x=tenById(k.tenantId),a=userById(k.assignee);
+    return'<tr><td><b>'+esc(k.title)+'</b>'+(k.desc?'<div class="small muted">'+esc(k.desc)+'</div>':'')+'<div style="margin-top:6px">'+flow(k.status)+'</div></td><td class="small">'+catName(k.cat)+'</td><td>'+priPill(k.pri)+'</td><td class="small">'+esc(x?x.name:"")+'<div class="muted">'+esc(unitName(unitById(k.unitId)))+'</div></td><td class="small">'+esc(a?a.name:"—")+'</td><td class="r"><button class="btn sm" data-act="ticket" data-id="'+k.id+'">'+t("edit")+'</button></td></tr>';});
+  return head(t("nTickets"),"",'<select id="fil" aria-label="'+t("status")+'"><option value="">'+t("all")+'</option><option value="open"'+(UI.fil==="open"?" selected":"")+'>'+t("openTickets")+'</option><option value="done"'+(UI.fil==="done"?" selected":"")+'>'+t("sClosed")+'</option></select>')+statusBanner()+'<div class="card">'+table([{h:t("title")},{h:t("category")},{h:t("priority")},{h:t("tenant")},{h:t("assignee")},{h:""}],rows)+'</div>';
+};
+
+VIEWS.notices=()=>head(t("nNotices"),"",'<button class="btn primary" data-act="newNotice"'+dis()+'>+ '+t("newNotice")+'</button>')+statusBanner()+noticeList(mine("notices"));
+function noticeList(list){return list.length?list.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(n=>'<div class="card"><h2><span>'+esc(n.title)+'</span><span class="small muted" style="font-weight:400">'+dFmt(n.date)+' · '+(n.propId?esc(propById(n.propId).name):t("allProps"))+'</span></h2><p style="margin:0;white-space:pre-line">'+esc(n.body)+'</p></div>').join(""):'<div class="card empty">'+t("none")+'</div>';}
+
+const FEAT={fRent:["ভাড়া ও বকেয়ার হিসাব","Rent and dues tracking"],fReceipt:["রসিদ ও ইনভয়েস","Receipts and invoices"],fTenantPortal:["ভাড়াটিয়া পোর্টাল","Tenant portal"],fUtility:["বিদ্যুৎ-গ্যাস-পানি বিল","Utility billing"],fNotice:["নোটিশ বোর্ড","Notice board"],fMaint:["মেরামত ব্যবস্থাপনা","Maintenance workflow"],fExpense:["খরচ ও নিট আয়","Expenses and net income"],fReports:["রিপোর্ট ও অ্যানালিটিক্স","Reports and analytics"],fManagers:["প্রপার্টি ম্যানেজার ও অনুমতি","Managers and permissions"],fWhatsApp:["SMS/WhatsApp রিমাইন্ডার","SMS/WhatsApp reminders"],fAll:["সব ফিচার","Everything in Professional"],fApi:["API ও ইন্টিগ্রেশন","API and integrations"],fPriority:["অগ্রাধিকার সাপোর্ট","Priority support"],fBrand:["নিজস্ব ব্র্যান্ডিং","Custom branding"]};
+const ft=k=>FEAT[k]?FEAT[k][LANG==="bn"?0:1]:k;
+const priceTxt=p=>p.price==null?t("custom"):tk(p.price)+'<span class="muted small" style="font-weight:400">'+t("perMonth")+'</span>';
+const limTxt=v=>v===Infinity?"∞":nf(v);
+function plansGrid(o){
+  return '<div class="plans">'+S.plans.map(p=>{const cur=o&&o.plan===p.id;const fits=!o||["props","units","tenants","staff"].every(k=>({props:S.props.filter(x=>x.orgId===o.id).length,units:S.units.filter(x=>x.orgId===o.id).length,tenants:S.tenants.filter(x=>x.orgId===o.id&&x.active).length,staff:S.users.filter(x=>x.orgId===o.id).length})[k]<=p.lim[k]);
+    return '<div class="plan'+(cur?" current":"")+'"><div class="row" style="justify-content:space-between"><b style="font-size:1.05rem">'+p.name+'</b>'+(cur?'<span class="pill p-brand">'+t("curPlan")+'</span>':'')+'</div><div class="price">'+priceTxt(p)+'</div><div class="muted small num">'+limTxt(p.lim.props)+' '+t("lProps")+' · '+limTxt(p.lim.units)+' '+t("lUnits")+' · '+limTxt(p.lim.staff)+' '+t("lStaff")+'</div><ul>'+p.feats.map(f=>'<li>'+ft(f)+'</li>').join("")+'</ul>'+(o&&!cur&&p.price!=null?'<button class="btn '+(p.price>planOf(o).price?"primary":"")+'" data-act="plan" data-id="'+p.id+'"'+(!fits||o.status==="suspended"?" disabled":"")+'>'+t("switchPlan")+'</button>':'')+'</div>';}).join("")+'</div>';
+}
+VIEWS.sub=function(){
+  const o=O(),p=planOf(o);const use=[["lProps",S.props.filter(x=>x.orgId===o.id).length,p.lim.props],["lUnits",S.units.filter(x=>x.orgId===o.id).length,p.lim.units],["lTen",S.tenants.filter(x=>x.orgId===o.id&&x.active).length,p.lim.tenants],["lStaff",S.users.filter(x=>x.orgId===o.id).length,p.lim.staff]];
+  const hist=S.subPays.filter(s=>s.orgId===o.id).sort((a,b)=>b.date.localeCompare(a.date));
+  return head(t("nSub"),esc(oname(o)))+statusBanner()+
+   '<div class="grid g3">'+kpi(t("curPlan"),p.name,subPill(o.status),true)+kpi(t("renews"),o.renew?dFmt(o.renew):"—",p.price==null?t("custom"):tk(p.price)+t("perMonth"))+'<div class="card kpi"><small>'+t("usage")+'</small>'+use.map(([k,n,l])=>'<div style="margin-top:6px"><div class="row small" style="justify-content:space-between"><span>'+t(k)+'</span><span class="num">'+nf(n)+' / '+limTxt(l)+'</span></div><div class="meter"><i style="width:'+(l===Infinity?8:Math.min(100,Math.round(n/(l||1)*100)))+'%"></i></div></div>').join("")+'</div></div>'+
+   plansGrid(o)+'<div class="banner info small">'+t("payNote")+'</div>'+
+   '<div class="card"><h2>'+t("history")+'</h2>'+table([{h:t("month")},{h:t("date")},{h:"Ref"},{h:t("amount"),r:1},{h:t("status")}],hist.map(s=>'<tr><td>'+mName(s.month)+'</td><td class="small">'+dFmt(s.date)+'</td><td class="num small">'+esc(s.ref)+'</td><td class="r num">'+tk(s.amount)+'</td><td>'+subPayPill(s.status)+'</td></tr>'))+'</div>';
+};
+const subPayPill=s=>s==="paid"?'<span class="pill p-ok">'+t("fPaid")+'</span>':s==="failed"?'<span class="pill p-bad">'+t("fFailed")+'</span>':'<span class="pill p-mute">'+t("fRefund")+'</span>';
+
+VIEWS.team=function(){
+  const o=O(),ms=S.users.filter(u=>u.orgId===o.id),P=["collect","bills","tenants","expenses","nid"];
+  const PK={collect:"pCollect",bills:"pBills",tenants:"pTenants",expenses:"pExpenses",nid:"pNid"};
+  return head(t("nTeam"),esc(oname(o)))+
+   '<div class="card"><h2>'+t("perms")+'</h2><p class="small muted" style="margin:0 0 10px">'+t("permHint")+'</p>'+(ms.length?'<div class="tablebox"><table class="matrix"><thead><tr><th>'+t("name")+'</th><th>'+t("assigned")+'</th>'+P.map(p=>'<th>'+t(PK[p])+'</th>').join("")+'<th>'+t("twofa")+'</th></tr></thead><tbody>'+ms.map(m=>'<tr><td><b>'+esc(m.name)+'</b><div class="small muted">'+t("lastActive")+': '+dFmt(m.last)+'</div></td><td class="small" style="text-align:left">'+m.props.map(p=>esc(propById(p).name)).join(", ")+'</td>'+P.map(p=>'<td><input type="checkbox" data-perm="'+m.id+'|'+p+'"'+(m.perms[p]?" checked":"")+(locked()?" disabled":"")+' aria-label="'+esc(m.name)+' '+t(PK[p])+'" style="width:18px;height:18px"></td>').join("")+'<td>'+(m.twofa?'<span class="pill p-ok">'+t("on")+'</span>':'<span class="pill p-warn">'+t("off")+'</span>')+'</td></tr>').join("")+'</tbody></table></div>':'<div class="empty">'+t("none")+'</div>')+'</div>'+
+   '<div class="grid g2"><div class="card"><h2>'+t("secNotes")+'</h2>'+["sec1","sec2","sec3","sec4"].map(k=>'<div class="row" style="flex-wrap:nowrap;align-items:flex-start;padding:5px 0"><span class="yes">✓</span><span class="small">'+t(k)+'</span></div>').join("")+'</div>'+
+   '<div class="card"><h2>'+t("nAudit")+'</h2>'+auditTable(S.audit.filter(a=>a.orgId===o.id),8)+'</div></div>';
+};
+const auditTable=(list,n)=>table([{h:t("date")},{h:t("who")},{h:t("action")}],list.slice(0,n||50).map(a=>'<tr><td class="num small">'+esc(a.at)+'</td><td class="small">'+esc(a.who)+'</td><td>'+esc(a.what)+(a.orgId?' <span class="muted small">· '+esc(oname(S.orgs.find(o=>o.id===a.orgId)||{name:""}))+'</span>':'')+'</td></tr>'));
+
+/* ---------- super admin */
+VIEWS.overview=function(){
+  const paying=S.orgs.filter(o=>["active","grace"].includes(o.status)&&planOf(o).price>0);
+  const mrr=paying.reduce((a,o)=>a+planOf(o).price,0);
+  const byPlan=S.plans.filter(p=>p.price).map(p=>paying.filter(o=>o.plan===p.id).reduce((a,o)=>a+p.price,0));
+  const occ=S.units.filter(u=>activeTenantOf(u)).length;
+  const growth=last6().map(m=>S.orgs.filter(o=>o.since.slice(0,7)===m).length);
+  const users=S.orgs.length+S.users.length+S.tenants.filter(x=>x.active).length;
+  return head("Super Admin",LANG==="bn"?"SmartRent BD প্ল্যাটফর্ম":"SmartRent BD platform")+demoBanner()+
+   '<div class="grid g4">'+kpi(t("mrr"),tk(mrr),nf(paying.length)+" "+(LANG==="bn"?"পেইড প্রতিষ্ঠান":"paying organizations"),true)+kpi(t("activeSubs"),nf(S.orgs.filter(o=>["active","grace","trial"].includes(o.status)).length),nf(S.orgs.filter(o=>o.status==="trial").length)+" "+t("sTrial"))+kpi(t("expiredSubs"),nf(S.orgs.filter(o=>o.status==="expired").length),nf(S.orgs.filter(o=>o.status==="grace").length)+" "+t("sGrace"))+kpi(t("failedPays"),nf(S.subPays.filter(s=>s.status==="failed").length),'<a href="#subs">'+t("nSubs")+'</a>')+'</div>'+
+   '<div class="mini"><div><small>'+t("totalUsers")+'</small><b>'+nf(users)+'</b></div><div><small>'+t("landlords")+'</small><b>'+nf(S.orgs.length)+'</b></div><div><small>'+t("properties")+' / '+t("unitsT")+'</small><b>'+nf(S.props.length)+' / '+nf(S.units.length)+'</b></div><div><small>'+t("occupied")+' / '+t("vacant")+'</small><b>'+nf(occ)+' / '+nf(S.units.length-occ)+'</b></div></div>'+
+   '<div class="grid g2"><div class="card"><h2>'+t("byPlan")+'</h2>'+barChart(S.plans.filter(p=>p.price).map(p=>p.name),[byPlan],["var(--chart1)"])+'</div><div class="card"><h2>'+t("growth")+'</h2>'+barChart(last6().map(m=>mName(m,true)),[growth],["var(--chart2)"]).replace(/৳/g,"")+'</div></div>'+
+   '<div class="banner info small">'+t("isolation")+'</div>';
+};
+VIEWS.orgs=function(){
+  return head(t("nOrgs"),t("isolation"),searchBox())+'<div class="card">'+table([{h:t("org")},{h:t("plan")},{h:t("usage")},{h:t("renews")},{h:t("since")},{h:t("status")},{h:"",r:1}],
+   S.orgs.filter(o=>qmatch(o.name,o.nameEn,o.owner,o.city)).map(o=>{const p=planOf(o),u=S.units.filter(x=>x.orgId===o.id).length;
+    return'<tr><td><b>'+esc(oname(o))+'</b><div class="small muted">'+esc(o.owner)+' · '+esc(o.city)+'</div></td><td>'+p.name+'</td><td class="num small">'+nf(u)+' / '+limTxt(p.lim.units)+' '+t("lUnits")+'</td><td class="small">'+(o.renew?dFmt(o.renew):"—")+'</td><td class="small">'+dFmt(o.since)+'</td><td>'+subPill(o.status)+'</td><td class="r"><div class="row" style="justify-content:flex-end;flex-wrap:nowrap"><button class="btn sm" data-act="openAs" data-id="'+o.id+'">'+t("openAs")+'</button>'+(o.status==="suspended"?'<button class="btn sm primary" data-act="activate" data-id="'+o.id+'">'+t("activate")+'</button>':'<button class="btn sm danger" data-act="suspend" data-id="'+o.id+'">'+t("suspend")+'</button>')+'</div></td></tr>';}))+'</div>';
+};
+VIEWS.plans=function(){
+  return head(t("nPlans"),t("editPlans"))+plansGrid(null)+'<div class="card"><h2>'+t("editPlans")+'</h2>'+table([{h:t("plan")},{h:t("price")},{h:t("lProps")},{h:t("lUnits")},{h:t("lTen")},{h:t("lStaff")}],S.plans.map(p=>'<tr><td><b>'+p.name+'</b></td>'+(p.price==null?'<td class="muted small">'+t("custom")+'</td>':'<td><input type="number" min="0" id="pp-'+p.id+'" data-pp="'+p.id+'|price" value="'+p.price+'" aria-label="'+p.name+' '+t("price")+'"></td>')+["props","units","tenants","staff"].map(k=>p.lim[k]===Infinity?'<td class="muted">∞</td>':'<td><input type="number" min="0" id="pl-'+p.id+'-'+k+'" data-pp="'+p.id+'|'+k+'" value="'+p.lim[k]+'" aria-label="'+p.name+' '+k+'"></td>').join("")+'</tr>'))+'<div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn primary" data-act="savePlans">'+t("save")+'</button></div></div>';
+};
+VIEWS.subs=function(){
+  const list=S.subPays.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  return head(t("nSubs"),t("gatewayNote"))+'<div class="card">'+table([{h:t("org")},{h:t("month")},{h:t("date")},{h:"Ref"},{h:t("amount"),r:1},{h:t("status")},{h:"",r:1}],list.map(s=>{const o=S.orgs.find(x=>x.id===s.orgId);return'<tr><td>'+esc(oname(o))+'</td><td>'+mName(s.month)+'</td><td class="small">'+dFmt(s.date)+'</td><td class="num small">'+esc(s.ref)+'</td><td class="r num">'+tk(s.amount)+'</td><td>'+subPayPill(s.status)+'</td><td class="r">'+(s.status==="failed"?'<button class="btn sm primary" data-act="verifySub" data-id="'+s.id+'">'+t("verifyPay")+'</button>':s.status==="paid"?'<button class="btn sm" data-act="refundSub" data-id="'+s.id+'">'+t("refund")+'</button>':'')+'</td></tr>';}),null,true)+'</div>';
+};
+VIEWS.audit=()=>head(t("nAudit"))+'<div class="card">'+auditTable(S.audit)+'</div>';
+VIEWS.settings=()=>head(t("nSettings"))+'<div class="card"><div class="form">'+fld("stTrial",t("trialDays"),S.settings.trialDays,"number",'min="0" max="90"')+fld("stGrace",t("graceDays"),S.settings.graceDays,"number",'min="0" max="60"')+'</div>'+err()+'<div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn primary" data-act="saveSettings">'+t("save")+'</button></div></div>';
+
+/* ---------- tenant portal: every query is limited to this one tenant */
+const TEN=()=>tenById(UI.tenantId);
+VIEWS.tdash=function(){
+  const x=TEN();if(!x)return'<div class="card empty">'+t("none")+'</div>';
+  const u=unitById(x.unitId),d=tenantDue(x),o=S.orgs.find(z=>z.id===x.orgId);const open=S.bills.filter(b=>b.tenantId===x.id&&dueFor(b)>0).sort((a,b)=>a.due.localeCompare(b.due))[0];
+  const mgr=S.users.find(m=>m.orgId===x.orgId&&m.props.includes(u.propId));
+  const notes=S.notices.filter(n=>n.orgId===x.orgId&&(!n.propId||n.propId===u.propId));
+  return head(t("hello")+", "+esc(x.name),t("yourUnit")+": "+esc(unitName(u))+" · "+esc(oname(o)))+demoBanner()+
+   '<div class="grid g3">'+kpi(t("yourDue"),tk(d),d>0?(open?t("dueDate")+": "+dFmt(open.due):""):t("allPaid"),true)+kpi(t("monthlyRent"),tk(u.rent),t("deposit")+" "+tk(x.advance))+kpi(t("leaseEnd"),dFmt(x.end),nf(Math.max(0,daysBetween(TODAY,x.end)))+" "+t("daysLeft"))+'</div>'+
+   '<div class="card"><h2>'+t("payOnline")+'</h2><div class="row"><button class="btn primary" disabled>'+t("payOnline")+' · bKash / Nagad</button><span class="small muted" style="flex:1;min-width:220px">'+t("payOnlineSoon")+'</span></div></div>'+
+   '<div class="grid g2"><div class="card"><h2>'+t("nMyBills")+' <a class="btn sm" href="#tbills">'+t("all")+'</a></h2>'+myBills(x,3)+'</div>'+
+   '<div class="grid" style="align-content:start"><div class="card"><h2>'+t("contact")+'</h2><div class="list-row"><span>'+t("landlordContact")+'</span><span class="num">'+esc(mgr?mgr.name:o.owner)+' · '+esc(o.phone)+'</span></div><div class="list-row"><span>'+t("agreement")+'</span><span class="small muted">'+t("agreementNote")+'</span></div></div>'+
+   '<div class="card"><h2>'+t("latestNotices")+'</h2>'+(notes.length?notes.slice(0,3).map(n=>'<div class="list-row"><b>'+esc(n.title)+'</b><span class="small muted">'+dFmt(n.date)+'</span></div>').join(""):'<div class="empty">'+t("none")+'</div>')+'</div></div></div>';
+};
+function myBills(x,limit){const bs=S.bills.filter(b=>b.tenantId===x.id).sort((a,b)=>b.month.localeCompare(a.month)).slice(0,limit||99);
+  return table([{h:t("month")},{h:t("total"),r:1},{h:t("due"),r:1},{h:t("status")},{h:""}],bs.map(b=>'<tr><td>'+mName(b.month)+'</td><td class="r num">'+tk(b.total)+'</td><td class="r num">'+tk(dueFor(b))+'</td><td>'+billPill(b)+'</td><td class="r"><button class="btn sm" data-act="bill" data-id="'+b.id+'">'+(dueFor(b)>0?t("invoice"):t("receipt"))+'</button></td></tr>'));}
+VIEWS.tbills=()=>{const x=TEN();return head(t("nMyBills"),esc(x.name))+'<div class="card">'+myBills(x)+'</div>';};
+VIEWS.ttickets=function(){const x=TEN(),list=S.tickets.filter(k=>k.tenantId===x.id);
+  return head(t("nMyTickets"),"",'<button class="btn primary" data-act="newTicket">+ '+t("newTicket")+'</button>')+(list.length?list.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(k=>'<div class="card"><h2><span>'+esc(k.title)+'</span>'+tixPill(k.status)+'</h2><div class="row small muted" style="margin-bottom:8px">'+catName(k.cat)+' · '+priPill(k.pri)+' · '+dFmt(k.date)+'</div>'+flow(k.status)+(k.comments.length?'<div style="margin-top:10px">'+k.comments.map(c=>'<div class="list-row small"><span>'+esc(c.text)+'</span><span class="muted">'+esc(c.who)+'</span></div>').join("")+'</div>':'')+'</div>').join(""):'<div class="card empty">'+t("none")+'</div>');};
+VIEWS.tnotices=()=>{const x=TEN(),u=unitById(x.unitId);return head(t("nNotices"))+noticeList(S.notices.filter(n=>n.orgId===x.orgId&&(!n.propId||n.propId===u.propId)));};
+
+/* ================================================================ modal, toast, form helpers */
+function modal(title,body,foot){document.getElementById("layer").innerHTML='<div class="scrim" data-act="closeScrim"><div class="modal" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><header><h3>'+esc(title)+'</h3><button class="x" data-act="close" aria-label="'+t("close")+'">×</button></header><div class="body">'+body+'</div>'+(foot?'<footer>'+foot+'</footer>':'')+'</div></div>';const f=document.querySelector(".modal input:not([disabled]),.modal select,.modal textarea");if(f)f.focus();}
+const closeModal=()=>{document.getElementById("layer").innerHTML="";};
+let toastT=null;
+function toast(msg){let el=document.querySelector(".toast");if(!el){el=document.createElement("div");el.className="toast";el.setAttribute("role","status");document.body.appendChild(el);}el.textContent=msg;clearTimeout(toastT);toastT=setTimeout(()=>el.remove(),2600);}
+const err=()=>'<div class="banner bad small" id="ferr" hidden></div>';
+function showErr(m){const e=document.getElementById("ferr");if(e){e.textContent=m;e.hidden=false;}return false;}
+function fld(id,label,v,type,extra,full){return'<label class="f'+(full?" full":"")+'" for="'+id+'">'+label+'<input id="'+id+'" type="'+(type||"text")+'" value="'+esc(v==null?"":v)+'" '+(extra||"")+'></label>';}
+const sel=(id,label,opts,v,full)=>'<label class="f'+(full?" full":"")+'" for="'+id+'">'+label+'<select id="'+id+'">'+opts.map(([k,l])=>'<option value="'+esc(k)+'"'+(String(k)===String(v)?" selected":"")+'>'+esc(l)+'</option>').join("")+'</select></label>';
+const val=id=>{const e=document.getElementById(id);return e?e.value.trim():"";};
+const numv=id=>Number(val(id)||0);
+const btns=(act,id,label)=>'<button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn primary" data-act="'+act+'" data-id="'+(id||"")+'">'+(label||t("save"))+'</button>';
+const phoneOk=p=>/^01\d{9}$/.test(String(p).replace(/[\s-]/g,""));
+
+function billModal(id){
+  const b=S.bills.find(x=>x.id===id),x=tenById(b.tenantId),u=unitById(b.unitId),o=S.orgs.find(z=>z.id===b.orgId),pays=S.payments.filter(p=>p.billId===b.id),d=dueFor(b);
+  const lines=b.items.map(([k,v])=>'<div class="rl"><span>'+t(k)+(k==="elec"?' <span style="color:#5c6884;font-size:12px">('+nf(b.cur-b.prev)+' kWh × '+u.elecRate.toLocaleString(loc())+')</span>':'')+'</span><span class="num">'+tk(v)+'</span></div>').join("");
+  const txt=["SmartRent BD · "+oname(o),t("billNo")+": "+b.no+" · "+mName(b.month),x.name+" · "+unitName(u)].concat(b.items.map(([k,v])=>t(k)+": "+tk(v))).concat([t("total")+": "+tk(b.total),t("paid")+": "+tk(paidFor(b)),t("due")+": "+tk(d)]).concat(pays.map(p=>t("receiptNo")+" "+p.no+" · "+dFmt(p.date)+" · "+tk(p.amount)+" ("+methodName(p.method)+")")).concat([t("thanks")]).join("\n");
+  window.__rcptText=txt;
+  modal((d>0?t("invoice"):t("receipt"))+" · "+b.no,'<div class="receipt" id="rcpt"><div class="rh"><div><div class="brandline">SmartRent BD</div><b>'+esc(oname(o))+'</b><div style="font-size:12px;color:#5c6884">'+esc(propById(u.propId).address)+'</div></div><div style="text-align:right"><div class="num" style="font-weight:700">'+b.no+'</div><div style="font-size:12px;color:#5c6884">'+mName(b.month)+'<br>'+t("dueDate")+': '+dFmt(b.due)+'</div></div></div>'+
+   '<div class="rl"><b>'+esc(x.name)+'</b><span>'+esc(unitName(u))+'</span></div>'+lines+'<div class="rt"><span>'+t("total")+'</span><span class="num">'+tk(b.total)+'</span></div>'+
+   pays.map(p=>'<div class="rl" style="color:#157347"><span>'+t("receiptNo")+' '+p.no+' · '+dFmt(p.date)+' · '+methodName(p.method)+(p.txn?' · '+esc(p.txn):'')+'</span><span class="num">− '+tk(p.amount)+'</span></div>').join("")+
+   '<div class="rt"><span>'+t("due")+'</span><span class="num">'+tk(d)+'</span></div>'+(d<=0?'<span class="stamp">PAID</span>':'')+'<div class="foot">SmartRent BD · by SIDDIQIYA Technology</div></div>',
+   '<button class="btn" data-act="copyR">'+t("copy")+'</button><a class="btn primary" target="_blank" rel="noopener" href="'+waLink(x.phone,txt)+'">'+t("sendWa")+'</a>');
+}
+function payModal(id){const b=S.bills.find(x=>x.id===id),x=tenById(b.tenantId),d=dueFor(b);
+  modal(t("recordPay")+" · "+b.no,'<div class="banner info small">'+esc(x.name)+' · '+esc(unitName(unitById(b.unitId)))+' · '+mName(b.month)+' — '+t("due")+': <b class="num">'+tk(d)+'</b></div><div class="form">'+fld("pAmt",t("amount")+" (৳)",d,"number",'min="1" max="'+d+'" inputmode="numeric"')+sel("pMethod",t("method"),[["cash",t("cash")],["bkash",t("bkash")],["nagad",t("nagad")],["bank",t("bank")]],"cash")+fld("pTxn",t("txn"),"","text",'autocomplete="off"')+fld("pDate",t("date"),TODAY,"date",'max="'+TODAY+'"')+'</div><p class="small muted" style="margin:0">'+t("immut")+'</p>'+err(),btns("savePay",b.id,t("recordPay")));}
+function tenantModal(id){const x=id?tenById(id):null,units=mine("units").filter(u=>!activeTenantOf(u)||(x&&u.id===x.unitId));
+  modal(x?x.name:t("addTenant"),'<div class="form">'+fld("tName",t("name"),x&&x.name,"text",'autocomplete="off" maxlength="80"')+fld("tPhone",t("phone"),x&&x.phone,"tel",'autocomplete="off" placeholder="01XXXXXXXXX"')+fld("tEmail",t("email"),x&&x.email,"email",'autocomplete="off"')+fld("tEmer",t("emergency"),x&&x.emergency,"tel",'autocomplete="off"')+
+   sel("tUnit",t("unit"),[["",t("selectUnit")]].concat(units.map(u=>[u.id,unitName(u)+" · "+tk(u.rent)])),x?x.unitId:"",true)+fld("tNid",t("nid"),x&&(can("nid")?x.nid:""),"text",'autocomplete="off" inputmode="numeric"'+(x&&!can("nid")?' placeholder="••••••'+esc(String(x.nid).slice(-4))+'" disabled':''))+fld("tMem",t("members"),x?x.members:3,"number",'min="1" max="20"')+fld("tStart",t("leaseStart"),x?x.start:TODAY,"date")+fld("tEnd",t("leaseEnd"),x?x.end:addMonths(CUR,12)+"-01","date")+fld("tAdv",t("advance")+" (৳)",x?x.advance:"","number",'min="0"',true)+
+   (x&&x.active?'<label class="chk full"><input type="checkbox" id="tLeft"> '+t("moveOut")+'</label>':'')+'</div>'+err(),btns("saveTenant",id));}
+function unitModal(id,pid){const u=id?unitById(id):null,p=propById(u?u.propId:pid),tm=u||S.units.find(x=>x.propId===p.id)||{rent:15000,deposit:30000,service:1500,gas:1080,water:500,garbage:100,elecRate:9.5,beds:2,baths:1,sqft:900};
+  modal((u?t("edit"):t("addUnit"))+" · "+p.name,'<div class="form">'+fld("uLabel",t("unit"),u?u.label:"","text",'placeholder="7A" maxlength="12"')+fld("uFloor",t("floor"),u?u.floor:"","number",'min="0" max="100"')+fld("uBeds",t("beds"),tm.beds,"number",'min="0" max="20"')+fld("uBaths",t("baths"),tm.baths,"number",'min="0" max="20"')+fld("uSqft",t("sqft"),tm.sqft,"number",'min="0"')+fld("uRent",t("rent")+" (৳)",tm.rent,"number",'min="0"')+fld("uDep",t("deposit")+" (৳)",tm.deposit,"number",'min="0"')+fld("uSvc",t("service")+" (৳)",tm.service,"number",'min="0"')+fld("uGas",t("gas")+" (৳)",tm.gas,"number",'min="0"')+fld("uWater",t("water")+" (৳)",tm.water,"number",'min="0"')+fld("uRate",t("elecRate"),tm.elecRate,"number",'min="0" step="0.01"')+(u?"":fld("uMeter",t("meterStart"),0,"number",'min="0"'))+'</div>'+err(),'<button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn primary" data-act="saveUnit" data-id="'+(id||"")+'" data-p="'+p.id+'">'+t("save")+'</button>');}
+function ticketModal(id){const k=S.tickets.find(z=>z.id===id),x=tenById(k.tenantId),i=FLOW.indexOf(k.status),mgrs=S.users.filter(u=>u.orgId===k.orgId&&u.props.includes(unitById(k.unitId).propId));
+  modal(k.title,'<div class="small muted">'+esc(x.name)+' · '+esc(unitName(unitById(k.unitId)))+' · '+catName(k.cat)+' · '+dFmt(k.date)+'</div>'+flow(k.status)+(k.desc?'<p style="margin:0">'+esc(k.desc)+'</p>':'')+
+   '<div class="form">'+sel("kPri",t("priority"),[["low",t("pLow")],["med",t("pMed")],["high",t("pHigh")]],k.pri)+sel("kAs",t("assignee"),[["","—"]].concat(mgrs.map(m=>[m.id,m.name])),k.assignee)+'<label class="f full" for="kCom">'+t(i>=3?"resolution":"comment")+'<textarea id="kCom" maxlength="500"></textarea></label></div>'+
+   (k.comments.length?'<div>'+k.comments.map(c=>'<div class="list-row small"><span>'+esc(c.text)+'</span><span class="muted">'+esc(c.who)+' · '+dFmt(c.at)+'</span></div>').join("")+'</div>':'')+err(),
+   '<button class="btn" data-act="close">'+t("cancel")+'</button><button class="btn" data-act="saveTicket" data-id="'+k.id+'"'+dis()+'>'+t("save")+'</button>'+(i<FLOW.length-1?'<button class="btn primary" data-act="advTicket" data-id="'+k.id+'"'+dis()+'>'+t("next")+': '+stName(FLOW[i+1])+'</button>':''));}
+
+/* ================================================================ actions */
+function guard(p){if(locked()){toast(t("expiredMsg"));return false;}if(p&&!can(p)){toast(t("noPerm"));return false;}return true;}
+function act(a,el){
+  const id=el.dataset.id;
+  switch(a){
+   case"close":closeModal();break;
+   case"pg":UI.page=Math.max(0,UI.page+Number(id));render();break;
+   case"reset":S=seed();UI.readings={};UI.q="";UI.fil="";UI.page=0;persist();toast(t("resetDone"));render();break;
+   case"bill":billModal(id);break;
+   case"pay":if(guard("collect"))payModal(id);break;
+   case"copyR":{const txt=window.__rcptText||"";try{navigator.clipboard.writeText(txt).then(()=>toast(t("copied")),selectR);}catch(e){selectR();}break;}
+   case"savePay":{if(!guard("collect"))return;const b=S.bills.find(x=>x.id===id),d=dueFor(b),amt=Math.round(numv("pAmt")),meth=val("pMethod"),txn=val("pTxn").toUpperCase();
+     if(!(amt>0))return showErr(t("payZero"));if(amt>d)return showErr(t("payTooMuch"));if(meth!=="cash"&&!txn)return showErr(t("txnNeeded"));if(txn&&S.payments.some(p=>p.txn===txn))return showErr(t("txnDup"));
+     S.payments.push({id:nid("p"),orgId:b.orgId,billId:b.id,tenantId:b.tenantId,amount:amt,date:val("pDate")||TODAY,method:meth,txn,no:"R-"+(++S.seq.rcp),by:UI.role});
+     audit((LANG==="bn"?"পেমেন্ট রেকর্ড · ":"Payment recorded · ")+unitName(unitById(b.unitId))+" · "+tk(amt));persist();render();billModal(b.id);toast(t("payDone"));break;}
+   case"late":{if(!guard("bills"))return;const b=S.bills.find(x=>x.id===id);if(b.items.some(i=>i[0]==="late"))return;b.items.push(["late",LATE_FEE]);b.total+=LATE_FEE;audit((LANG==="bn"?"বিলম্ব ফি · ":"Late fee · ")+b.no);toast(t("lateApplied"));render();break;}
+   case"gen":{if(!guard("bills"))return;const have=mine("bills").filter(b=>b.month===CUR),todo=mine("tenants").filter(x=>x.active&&!have.some(b=>b.tenantId===x.id));
+     for(const x of todo){const u=unitById(x.unitId),r=UI.readings[u.id];if(r!=null&&r<u.lastRead){toast(t("badReading")+" · "+unitName(u));return;}}
+     todo.forEach(x=>{const u=unitById(x.unitId),r=UI.readings[u.id],cur=r!=null?r:u.lastRead;mkBill(S,x,u,CUR,u.lastRead,cur,++S.seq.bill);u.lastRead=cur;});
+     UI.readings={};if(todo.length){audit((LANG==="bn"?"ইনভয়েস তৈরি · ":"Invoices generated · ")+mName(CUR)+" · "+todo.length);toast(nf(todo.length)+" "+t("billsMade"));}else toast(t("alreadyBilled"));render();break;}
+   case"nid":if(!can("nid"))return;UI.reveal[id]=!UI.reveal[id];if(UI.reveal[id])audit((LANG==="bn"?"NID দেখা হয়েছে · ":"National ID viewed · ")+tenById(id).name);render();break;
+   case"newTenant":if(!guard("tenants"))return;if(overLimit("tenants")){toast(t("limitHit"));return;}tenantModal(null);break;
+   case"editTenant":if(guard("tenants"))tenantModal(id);break;
+   case"saveTenant":{if(!guard("tenants"))return;const name=val("tName"),phone=val("tPhone").replace(/[\s-]/g,""),unitId=val("tUnit"),x=id?tenById(id):null;
+     if(!name||!phone)return showErr(t("needName"));if(!phoneOk(phone))return showErr(t("badPhone"));if(!unitId)return showErr(t("selectUnit"));if(val("tEnd")<=val("tStart"))return showErr(t("badDates"));
+     if(S.tenants.find(z=>z.unitId===unitId&&z.active&&(!x||z.id!==x.id)))return showErr(t("unitTaken"));
+     const rec={name,phone,email:val("tEmail"),emergency:val("tEmer"),unitId,members:numv("tMem")||1,start:val("tStart"),end:val("tEnd"),advance:numv("tAdv")};
+     if(can("nid")||!x)rec.nid=val("tNid");
+     if(x){Object.assign(x,rec);const lf=document.getElementById("tLeft");if(lf&&lf.checked)x.active=false;audit((LANG==="bn"?"ভাড়াটিয়ার তথ্য বদল · ":"Tenant updated · ")+name);}
+     else{S.tenants.push(Object.assign({id:nid("t"),orgId:UI.orgId,active:true},rec));audit((LANG==="bn"?"নতুন ভাড়াটিয়া · ":"New tenant · ")+name);}
+     closeModal();toast(t("saved"));render();break;}
+   case"newProp":if(!guard())return;if(overLimit("props")){toast(t("limitHit"));return;}modal(t("addProp"),'<div class="form">'+fld("prName",t("name"),"","text",'maxlength="80"',true)+fld("prAddr",t("address"),"","text",'maxlength="200"',true)+'</div>'+err(),btns("saveProp"));break;
+   case"saveProp":{if(!guard())return;const name=val("prName");if(!name)return showErr(t("name")+"?");S.props.push({id:nid("pr"),orgId:UI.orgId,name,address:val("prAddr")});audit((LANG==="bn"?"নতুন প্রপার্টি · ":"New property · ")+name);closeModal();render();break;}
+   case"newUnit":if(!guard())return;if(overLimit("units")){toast(t("limitHit"));return;}unitModal(null,id);break;
+   case"editUnit":if(guard())unitModal(id);break;
+   case"saveUnit":{if(!guard())return;const label=val("uLabel");if(!label)return showErr(t("unit")+"?");
+     const dup=S.units.find(u=>u.propId===el.dataset.p&&u.label.toLowerCase()===label.toLowerCase()&&u.id!==id);if(dup)return showErr(LANG==="bn"?"এই নম্বরের ফ্ল্যাট আগেই আছে।":"A unit with this number already exists.");
+     const rec={label,floor:numv("uFloor"),beds:numv("uBeds"),baths:numv("uBaths"),sqft:numv("uSqft"),rent:numv("uRent"),deposit:numv("uDep"),service:numv("uSvc"),gas:numv("uGas"),water:numv("uWater"),elecRate:numv("uRate")};
+     if(rec.rent<=0)return showErr(t("rent")+" > 0");
+     if(id)Object.assign(unitById(id),rec);else{const m0=numv("uMeter");S.units.push(Object.assign({id:nid("u"),orgId:UI.orgId,propId:el.dataset.p,meter0:m0,lastRead:m0,internet:0,garbage:100},rec));}
+     audit((LANG==="bn"?"ফ্ল্যাট সেভ · ":"Unit saved · ")+propById(el.dataset.p).name+" "+label);closeModal();render();break;}
+   case"newExpense":if(!guard("expenses"))return;modal(t("addExpense"),'<div class="form">'+sel("exCat",t("category"),EXC.map(c=>[c,exName(c)]),"maint")+sel("exProp",t("property"),mine("props").map(p=>[p.id,p.name]),"")+fld("exAmt",t("amount")+" (৳)","","number",'min="1"')+fld("exDate",t("date"),TODAY,"date",'max="'+TODAY+'"')+fld("exNote",t("note"),"","text",'maxlength="140"',true)+'</div>'+err(),btns("saveExpense"));break;
+   case"saveExpense":{if(!guard("expenses"))return;const amt=Math.round(numv("exAmt"));if(!(amt>0))return showErr(t("payZero"));S.expenses.push({id:nid("e"),orgId:UI.orgId,propId:val("exProp"),cat:val("exCat"),amount:amt,date:val("exDate")||TODAY,note:val("exNote")});audit((LANG==="bn"?"খরচ · ":"Expense · ")+exName(val("exCat"))+" · "+tk(amt));closeModal();toast(t("saved"));render();break;}
+   case"ticket":ticketModal(id);break;
+   case"saveTicket":case"advTicket":{if(!guard())return;const k=S.tickets.find(z=>z.id===id);k.pri=val("kPri");k.assignee=val("kAs");const c=val("kCom");
+     if(a==="advTicket"){const nx=FLOW[FLOW.indexOf(k.status)+1];if(nx==="assigned"&&!k.assignee)return showErr(t("assignee")+"?");k.status=nx;}
+     const who=UI.role==="manager"?ME_MGR().name:O().owner;if(c)k.comments.push({text:c,who,at:TODAY});audit((LANG==="bn"?"মেরামত আপডেট · ":"Maintenance update · ")+k.title+" → "+stName(k.status));closeModal();render();break;}
+   case"newTicket":modal(t("newTicket"),'<div class="form">'+fld("kTitle",t("title"),"","text",'maxlength="100"',true)+sel("kCat",LANG==="bn"?"ধরন":"Type",[["elec",t("cElec")],["plumb",t("cPlumb")],["water",t("cWater")],["sec",t("cSec")],["clean",t("cClean")],["gen",t("cGen")]],"plumb")+sel("kPri",t("priority"),[["low",t("pLow")],["med",t("pMed")],["high",t("pHigh")]],"med")+'<label class="f full" for="kDesc">'+t("details")+'<textarea id="kDesc" maxlength="500"></textarea></label></div>'+err(),btns("saveNewTicket"));break;
+   case"saveNewTicket":{const ti=val("kTitle");if(!ti)return showErr(t("title")+"?");const x=TEN();S.tickets.push({id:nid("k"),orgId:x.orgId,tenantId:x.id,unitId:x.unitId,title:ti,cat:val("kCat"),pri:val("kPri"),desc:val("kDesc"),status:"submitted",date:TODAY,assignee:"",comments:[]});closeModal();toast(t("ticketSent"));render();break;}
+   case"newNotice":if(!guard())return;modal(t("newNotice"),'<div class="form">'+fld("nTitle",t("title"),"","text",'maxlength="120"',true)+sel("nP",t("property"),[["",t("allProps")]].concat(mine("props").map(p=>[p.id,p.name])),"",true)+'<label class="f full" for="nBody">'+t("noticeBody")+'<textarea id="nBody" maxlength="2000"></textarea></label></div>'+err(),btns("saveNotice"));break;
+   case"saveNotice":{if(!guard())return;const ti=val("nTitle"),bd=val("nBody");if(!ti||!bd)return showErr(t("title")+" / "+t("noticeBody")+"?");S.notices.push({id:nid("n"),orgId:UI.orgId,propId:val("nP")||null,title:ti,body:bd,date:TODAY});audit((LANG==="bn"?"নোটিশ প্রকাশ · ":"Notice published · ")+ti);closeModal();toast(t("published"));render();break;}
+   case"plan":{const o=O(),p=S.plans.find(x=>x.id===id);o.plan=id;if(p.price===0)o.status="active";audit((LANG==="bn"?"প্ল্যান বদল · ":"Plan changed · ")+oname(o)+" → "+p.name);toast(t("planChanged")+(p.price>0&&o.status!=="active"?" · "+t("payNote"):""));render();break;}
+   case"openAs":UI.role="landlord";UI.orgId=id;location.hash="dash";route();break;
+   case"suspend":case"activate":{const o=S.orgs.find(z=>z.id===id);o.status=a==="suspend"?"suspended":"active";audit(oname(o)+" · "+t(a==="suspend"?"sSusp":"sActive"));render();break;}
+   case"savePlans":{for(const el2 of document.querySelectorAll("[data-pp]")){const[pid,k]=el2.dataset.pp.split("|"),v=Number(el2.value);if(!(v>=0)){toast(t("payZero"));return;}const p=S.plans.find(x=>x.id===pid);if(k==="price")p.price=Math.round(v);else p.lim[k]=Math.round(v);}audit(LANG==="bn"?"প্ল্যানের দাম/সীমা বদল":"Plan prices/limits changed");toast(t("saved"));render();break;}
+   case"verifySub":{const s=S.subPays.find(x=>x.id===id);modal(t("verifyPay"),'<p class="small muted" style="margin:0">'+t("gatewayNote")+'</p><div class="form">'+fld("vTxn",t("txn"),"","text",'autocomplete="off"',true)+'</div>'+err(),btns("saveVerify",s.id,t("verifyPay")));break;}
+   case"saveVerify":{const s=S.subPays.find(x=>x.id===id),txn=val("vTxn").toUpperCase();if(txn.length<6)return showErr(t("txnNeeded"));if(S.subPays.some(x=>x.ref===txn))return showErr(t("txnDup"));const o=S.orgs.find(x=>x.id===s.orgId);
+     S.subPays.push({id:nid("s"),orgId:o.id,month:s.month,amount:s.amount,status:"paid",ref:txn,date:TODAY});o.status="active";o.renew=addMonths(CUR,1)+"-"+(o.renew||TODAY).slice(8,10);audit((LANG==="bn"?"যাচাইকৃত সাবস্ক্রিপশন পেমেন্ট · ":"Verified subscription payment · ")+oname(o)+" · "+txn);closeModal();render();break;}
+   case"refundSub":{const s=S.subPays.find(x=>x.id===id);S.subPays.push({id:nid("s"),orgId:s.orgId,month:s.month,amount:-s.amount,status:"refunded",ref:"RF-"+s.ref,date:TODAY});audit((LANG==="bn"?"রিফান্ড রেকর্ড · ":"Refund recorded · ")+s.ref);render();break;}
+   case"saveSettings":{const tr=numv("stTrial"),gr=numv("stGrace");if(tr<0||tr>90||gr<0||gr>60)return showErr("0–90 / 0–60");S.settings.trialDays=tr;S.settings.graceDays=gr;audit((LANG==="bn"?"সেটিংস: ট্রায়াল ":"Settings: trial ")+tr+", grace "+gr);toast(t("saved"));render();break;}
+  }
+}
+function selectR(){const r=document.getElementById("rcpt");if(!r)return;const s=window.getSelection(),g=document.createRange();g.selectNodeContents(r);s.removeAllRanges();s.addRange(g);}
+
+/* ================================================================ events */
+document.addEventListener("click",e=>{const el=e.target.closest("[data-act]");if(!el)return;if(el.dataset.act==="closeScrim"){if(e.target===el)closeModal();return;}if(el.tagName==="A")return;e.preventDefault();if(el.disabled)return;act(el.dataset.act,el);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+document.addEventListener("input",e=>{const el=e.target;
+  if(el.id==="q"){UI.q=el.value;UI.page=0;const pos=el.selectionStart;render();const n=document.getElementById("q");if(n){n.focus();try{n.setSelectionRange(pos,pos);}catch(_){}}}
+  if(el.dataset.read){const u=unitById(el.dataset.read),v=el.value===""?null:Number(el.value);UI.readings[u.id]=v;const c=document.getElementById("use-"+u.id);if(c)c.textContent=v==null?"—":(v<u.lastRead?"!":nf(v-u.lastRead));}
+});
+document.addEventListener("change",e=>{const el=e.target;
+  if(el.id==="roleSel"){UI.role=el.value;UI.q="";UI.fil="";UI.page=0;if(el.value==="tenant"&&!S.tenants.some(x=>x.orgId===UI.orgId&&x.active))UI.orgId="o1";location.hash=defaultView();route();}
+  else if(el.id==="orgSel"){UI.orgId=el.value;UI.q="";UI.page=0;render();}
+  else if(el.id==="mgrSel"){UI.userId=el.value;UI.page=0;render();}
+  else if(el.id==="tenSel"){UI.tenantId=el.value;render();}
+  else if(el.id==="monthSel"){UI.month=el.value;UI.page=0;render();}
+  else if(el.id==="fil"){UI.fil=el.value;UI.page=0;render();}
+  else if(el.dataset.perm){if(locked())return;const[mid,p]=el.dataset.perm.split("|"),m=userById(mid);m.perms[p]=el.checked;audit((LANG==="bn"?"ম্যানেজারের অনুমতি বদল · ":"Manager permission · ")+m.name+" · "+p+" "+(el.checked?"on":"off"));persist();}
+});
+document.getElementById("lang-bn").onclick=()=>{LANG="bn";render();};
+document.getElementById("lang-en").onclick=()=>{LANG="en";render();};
+window.addEventListener("hashchange",()=>{UI.q="";UI.fil="";UI.page=0;UI.month=CUR;route();});
+load();route();
+})();
+</script>
